@@ -1,0 +1,457 @@
+/**
+ ******************************************************************************
+ * @mainpage AVA LLC MAINBOARD Firmware
+ * @brief Central control firmware for distributed CAN-based subsystems.
+ ******************************************************************************
+ * @section intro Introduction
+ * The **MAINBOARD** subsystem is the central controller for the AVA LLC system.
+ * It coordinates communication between vehicle subsystems via CAN and UART,
+ * managing the following components:
+ * - @ref THROTTLE_SYSTEM (CAN2ANALOG)
+ * - @ref BOOSTER_SYSTEM (Brake)
+ * - @ref STEERING_SYSTEM (EPS)
+ * - @ref ULTRASONIC_SYSTEM (Distance sensing)
+ *
+ * @section overview System Overview
+ * The MAINBOARD interfaces with distributed STM32-based modules over the CAN bus
+ * and streams telemetry data over UART to a host.
+ *
+ * - **CAN:** Real-time command and feedback network (500 kbps)
+ * - **UART:** Telemetry and diagnostics (115200 bps)
+ * - **PWM:** Analog control output for throttle
+ * - **GPIO:** Safety inputs and system indicators
+ *
+ * @section comm Communication Protocols
+ * Detailed message formats for all communication channels are described in
+ * @ref comm_protocol.
+ *
+ * @section author Author
+ * Developed by **Shiddieqy**  
+ * Version **1.1.0**  
+ * Date **2025-11-11**
+ ******************************************************************************
+ */
+
+
+/**
+ * @page comm_protocol Communication Protocols
+ * @brief Defines UART and CAN data formats for all MAINBOARD subsystems.
+ *
+ * @section overview Overview
+ * The MAINBOARD coordinates multiple subsystems over a shared CAN network.
+ * Each subsystem communicates using fixed message identifiers (11-bit standard)
+ * and specific byte mappings.
+ *
+ * Below is a network diagram illustrating message flows between MAINBOARD and
+ * the subsystems (Throttle, Booster, Steering, Ultrasonic) plus UART telemetry:
+
+ *
+ *
+ * <div style="background:#8e8e8e; padding:10px; border-radius:6px; text-align:center;">
+ * ![System Network Diagram](images/network.png)
+ * _Figure 1 — CAN topology overview_
+ * </div>
+  * 
+ * @section uart UART Telemetry Protocol
+ * @brief Binary 34-byte data frame (`uart_data[34]`) sent via UART8 every 100 ms.
+ *
+ * @subsection uart_config Configuration
+ * | Parameter | Value |
+ * |------------|--------|
+ * | Peripheral | UART8 |
+ * | Baud Rate | 115200 bps |
+ * | Format | 8N1 |
+ * | Direction | Duplex |
+ *
+  * ---
+ * @subsection uart_protocol Complete UART Query / Response Protocol
+ * @brief Defines the bidirectional serial protocol between MAINBOARD (slave)
+ * and Jetson (master) for data streaming, queries, and control commands.
+ *
+ * **Interface Characteristics**
+ * | Parameter | Value |
+ * |------------|--------|
+ * | **Baud Rate** | 115200 bps |
+ * | **Frame Type** | 8 data bits, 1 stop bit, no parity (8N1) |
+ * | **Default Period** | 100 ms (10 Hz) |
+ * | **Protocol Type** | Query–Response |
+ *
+ * ---
+ * @subsubsection uart_frame_structure Frame Structure
+ * | Field | Bytes | Description |
+ * |--------|--------|-------------|
+ * | Header | 1 | Fixed `0xA5` |
+ * | Function Code | 1 | Defines command type |
+ * | Data | 0–nn | Variable payload |
+ * | Checksum | 1 | Additive sum of all bytes from Header to last Data |
+ *
+ * Example query frame:
+ * ```
+ * [0xA5] [0x01] [0xA6]
+ * ```
+ * Example response frame:
+ * ```
+ * [0xA5] [0x11] [...data...] [Checksum]
+ * ```
+ *
+ * ---
+ * @subsection uart_func Function Codes
+ * The protocol defines matching Query (0x00–0x06) and Response (0x10–0x16) codes:
+ *
+ * | Query | Response | Description | Data Length |
+ * |--------|-----------|--------------|--------------|
+ * | 0x00 | 0x10 | Stop streaming data | 0 |
+ * | 0x01 | 0x11 | Request start streaming data | 32 |
+ * | 0x02 | 0x12 | Request specific data bytes | Variable |
+ * | 0x03 | 0x13 | Batch Command (Drive, Brake, Steer) | 5 |
+ * | 0x04 | 0x14 | Drive Command | 3 |
+ * | 0x05 | 0x15 | Brake Command | 1 |
+ * | 0x06 | 0x16 | Steer Command | 1 |
+ *
+ * ---
+ * @subsection uart_stream Streaming Data Format (Response 0x11)
+ * The streaming response contains **complete vehicle telemetry** (32 bytes total):
+ *
+ * | Byte | Field | Type | Description |
+ * |------|--------|------|-------------|
+ * | 0 | Header | uint8_t | `0xA5` |
+ * | 1 | Function Code | uint8_t | `0x11` |
+ * | 2 | Battery Percentage | int8_t | 0–100 |
+ * | 3 | Charging Status | uint8_t | 0=Idle, 1=Charging |
+ * | 4–5 | RPM | int16_t | Wheel speed (×0.1) |
+ * | 6 | Brake Percentage | int8_t | 0–100 |
+ * | 7 | Steer Angle | int8_t | −90° to +90° |
+ * | 8–9 | IMU X | int16_t | Raw accel X |
+ * | 10–11 | IMU Y | int16_t | Raw accel Y |
+ * | 12–13 | IMU Z | int16_t | Raw accel Z |
+ * | 14–15 | IMU Yaw | int16_t | −18000–18000 → ÷100 = −180°–180° |
+ * | 16–17 | IMU Pitch | int16_t | −18000–18000 → ÷100 = −180°–180° |
+ * | 18–19 | IMU Roll | int16_t | −18000–18000 → ÷100 = −180°–180° |
+ * | 20 | Radar Closest | uint8_t | 0–255 → ×0.01 m |
+ * | 21 | Ultrasonic Front | uint8_t | 0–255 → ×0.01 m |
+ * | 22 | Ultrasonic Rear | uint8_t | 0–255 → ×0.01 m |
+ * | 23 | Front Bumper | uint8_t | 0=Off, 1=Pressed |
+ * | 24 | Rear Bumper | uint8_t | 0=Off, 1=Pressed |
+ * | 25–28 | GPS Latitude | float | −90.0000° to +90.0000° |
+ * | 29–32 | GPS Longitude | float | −180.0000° to +180.0000° |
+ * | 33 | Checksum | uint8_t | Sum of bytes 0–32 |
+ *
+ * Query to enable streaming:
+ * ```
+ * A5 01 A6
+ * ```
+ * Response (streaming data):
+ * ```
+ * A5 11 <34-byte payload> [Checksum]
+ * ```
+ *
+ * Query to stop streaming:
+ * ```
+ * A5 00 A5
+ * ```
+ * Response:
+ * ```
+ * A5 10 B5
+ * ```
+ *
+ * ---
+ * @subsection uart_batch Batch Command (0x03 / 0x13)
+ * Allows simultaneous control of throttle, brake, and steering every 200 ms.
+ *
+ * **Query (0x03)**
+ * | Byte | Field | Type | Description |
+ * |------|--------|------|-------------|
+ * | 0 | Header | uint8_t | 0xA5 |
+ * | 1 | Function Code | uint8_t | 0x03 |
+ * | 2–3 | RPM Target | uint16_t | Desired RPM |
+ * | 4 | Direction | uint8_t | 0=Forward,1=Reverse |
+ * | 5 | Brake | uint8_t | 0=0%,255=100% |
+ * | 6 | Steer Angle | int8_t | −120–120 (maps −30°–30°) |
+ * | 7 | Checksum | uint8_t | Sum of bytes 0–6 |
+ *
+ * **Response (0x13)**
+ * Returns current measured values:
+ *
+ * | Byte | Field | Description |
+ * |------|--------|-------------|
+ * | 0 | Header (`0xA5`) | Start |
+ * | 1 | Function Code (`0x13`) | Acknowledge |
+ * | 2–3 | Measured RPM | uint16_t |
+ * | 4 | Direction | 0/1 |
+ * | 5 | Brake | 0–255 |
+ * | 6 | Steer Angle | −120–120 |
+ * | 7 | Checksum | — |
+ *
+ * ---
+ * ---
+ * @subsection uart_cmd_individual Individual Control Commands
+ * @brief Command–response frames for direct control of drive, brake, and steering actuators.
+ *
+ * Each command uses a **Query/Response** model between the Jetson (master)
+ * and MAINBOARD (slave). The Jetson issues a control command every 100–200 ms.
+ * If no new command is received within 300 ms, the MAINBOARD automatically
+ * applies a **safety stop** (brake = 100%, throttle = 0, steer = 0°).
+ *
+ * All commands follow this structure:
+ * ```
+ * [Header 0xA5] [Function Code] [Data ...] [Checksum]
+ * ```
+ *
+ * The **response frame** always uses the Function Code + 0x10 pattern.
+ * Example:  
+ * - Query 0x04 → Response 0x14  
+ * - Query 0x05 → Response 0x15  
+ * - Query 0x06 → Response 0x16  
+ *
+ * **Checksum Calculation:**  
+ * Add all bytes from Header (0xA5) to the last data byte, keep the lowest 8 bits.
+ *
+ * ---
+ * @subsubsection uart_drive Drive Command (0x04 / 0x14)
+ * Controls the throttle subsystem (CAN2ANALOG) through UART interface.
+ *
+ * **Query (Jetson → MAINBOARD)**
+ * | Byte | Field | Description | Type / Range |
+ * |------|--------|-------------|---------------|
+ * | 0 | Header | Fixed `0xA5` | uint8_t |
+ * | 1 | Function Code | `0x04` | uint8_t |
+ * | 2–3 | RPM Target | Desired wheel speed ×0.1 | uint16_t |
+ * | 4 | Direction | 0=Forward, 1=Reverse | uint8_t |
+ * | 5 | Checksum | Additive sum of bytes 0–4 | uint8_t |
+ *
+ * **Response (MAINBOARD → Jetson)**
+ * | Byte | Field | Description | Type / Range |
+ * |------|--------|-------------|---------------|
+ * | 0 | Header | `0xA5` | uint8_t |
+ * | 1 | Function Code | `0x14` (acknowledge) | uint8_t |
+ * | 2–3 | Measured RPM | Current wheel speed ×0.1 | uint16_t |
+ * | 4 | Direction | 0=Forward,1=Reverse | uint8_t |
+ * | 5 | Checksum | Additive sum 0–4 | uint8_t |
+ *
+ * **Example**
+ * ```
+ * → Jetson:   A5 04 10 27 00 E0   (Request +10000 RPM Forward)
+ * ← Response: A5 14 0F 26 00 DE   (Actual +9750 RPM Forward)
+ * ```
+ *
+ * **Behavior**
+ * - Throttle control is internally forwarded to the CAN2ANALOG subsystem.  
+ * - The MAINBOARD scales RPM → PWM analog voltage output (1.0–3.3 V).  
+ * - Direction = 1 triggers reverse safety limiter (max 30% RPM).  
+ * - Command timeout (no update in 300 ms) forces throttle output = 0%.
+ *
+ * ---
+ * @subsubsection uart_brake Brake Command (0x05 / 0x15)
+ * Controls the Booster (brake actuator) via UART interface.
+ *
+ * **Query (Jetson → MAINBOARD)**
+ * | Byte | Field | Description | Type / Range |
+ * |------|--------|-------------|---------------|
+ * | 0 | Header | Fixed `0xA5` | uint8_t |
+ * | 1 | Function Code | `0x05` | uint8_t |
+ * | 2 | Brake Command | Desired brake intensity | uint8_t (0–255) |
+ * | 3 | Checksum | Additive sum 0–2 | uint8_t |
+ *
+ * **Response (MAINBOARD → Jetson)**
+ * | Byte | Field | Description | Type / Range |
+ * |------|--------|-------------|---------------|
+ * | 0 | Header | `0xA5` | uint8_t |
+ * | 1 | Function Code | `0x15` | uint8_t |
+ * | 2 | Brake Applied | Actual brake intensity | uint8_t |
+ * | 3 | Fault Status | 0=OK,1=FAULT | uint8_t |
+ * | 4 | Checksum | Additive sum 0–3 | uint8_t |
+ *
+ * **Example**
+ * ```
+ * → Jetson:   A5 05 7F 29   (Set Brake = 127 / 50%)
+ * ← Response: A5 15 80 00 3A   (Confirmed Brake = 128, No Fault)
+ * ```
+ *
+ * **Behavior**
+ * - The MAINBOARD relays brake command to the Booster system (CAN ID 0x25).  
+ * - Nonlinear brake curve maps 0–255 to real PWM duty (%).  
+ * - Feedback reports current brake percentage and fault status.  
+ * - If CAN feedback lost, Brake = 255 (full stop) is automatically asserted.
+ *
+ * ---
+ * @subsubsection uart_steer Steering Command (0x06 / 0x16)
+ * Controls the Steering (EPS) subsystem via UART.
+ *
+ * **Query (Jetson → MAINBOARD)**
+ * | Byte | Field | Description | Type / Range |
+ * |------|--------|-------------|---------------|
+ * | 0 | Header | Fixed `0xA5` | uint8_t |
+ * | 1 | Function Code | `0x06` | uint8_t |
+ * | 2 | Steer Angle | Desired angle offset | int8_t (−120–120) |
+ * | 3 | Checksum | Additive sum 0–2 | uint8_t |
+ *
+ * **Response (MAINBOARD → Jetson)**
+ * | Byte | Field | Description | Type / Range |
+ * |------|--------|-------------|---------------|
+ * | 0 | Header | `0xA5` | uint8_t |
+ * | 1 | Function Code | `0x16` | uint8_t |
+ * | 2 | Actual Angle | Current steering angle | int8_t |
+ * | 3 | Fault Code | From EPS system | uint8_t |
+ * | 4 | Checksum | Additive sum 0–3 | uint8_t |
+ *
+ * **Example**
+ * ```
+ * → Jetson:   A5 06 1E C9   (Request +30° steer)
+ * ← Response: A5 16 1D 00 D8   (Confirmed +29°, OK)
+ * ```
+ *
+ * **Behavior**
+ * - The MAINBOARD converts UART angle command → EPS CAN frame (0x314).  
+ * - Saturates to ±650° internally to avoid motor overtravel.  
+ * - EPS returns current angle and fault code to MAINBOARD, forwarded to Jetson.  
+ * - Faults include: over-temp, torque sensor, overcurrent (see Steering section).
+ *
+ * ---
+ * @subsubsection uart_timing Command Timing
+ * | Parameter | Value | Description |
+ * |------------|--------|-------------|
+ * | **Cycle Time** | 100–200 ms | Recommended update period |
+ * | **Timeout** | 300 ms | Safety stop threshold |
+ * | **Checksum** | 8-bit additive | Sum of all bytes except checksum |
+ * | **Response Delay** | ≤10 ms | MAINBOARD reply latency |
+ *
+ * @note
+ * - All integers use **little-endian byte order**.  
+ * - Invalid checksum or header (`0xA5`) causes frame rejection.  
+ * - Function Code + 0x10 pattern is mandatory for all responses.  
+ * - Commands may be mixed with streaming (0x11) if real-time telemetry is active.
+ *
+
+
+ * ---
+ * @section can CAN Bus Protocols
+ * @brief CAN data structure and subsystem-specific frame mappings.
+ *
+ * @subsection can_config Configuration
+ * | Parameter | Value |
+ * |------------|--------|
+ * | **Baud Rate** | 500 kbps |
+ * | **Frame Type** | Standard 11-bit |
+ * | **Mode** | Normal |
+ * | **Termination** | 120 Ω at both ends |
+ *
+ * ---
+ * @subsection can_throttle Throttle (CAN2ANALOG)
+ * **TX ID:** 0x3B (MAINBOARD → CAN2ANALOG)  
+ * **RX ID:** 0x3A (CAN2ANALOG → MAINBOARD)
+ *
+ * | Byte | Field | Description | Range |
+ * |------|--------|-------------|--------|
+ * | 0–1 | RPM Command | Target throttle speed (uint16) | 0–65535 |
+ * | 2   | Direction | 0 = Forward, 1 = Reverse | — |
+ * | 3–7 | Reserved | — | — |
+ *
+ * **Feedback (0x3A)**  
+ * | Byte | Field | Description |
+ * |------|--------|-------------|
+ * | 0–1 | Output Voltage | mV |
+ * | 2   | Direction | 0=FWD, 1=REV |
+ * | 3   | Controller Status | OK/FAULT |
+ * | 4–5 | Measured RPM | uint16 |
+ * | 6–7 | Reserved | — |
+ *
+ * Operational notes:
+ * - Watchdog: throttle resets to safe state if CAN lost > 200 ms.
+ * - PWM mapping: firmware maps RPM command → PWM duty via calibrated curve.
+ *
+ * ---
+ * @subsection can_booster Brake (iBooster)
+ * **TX ID:** 0x1B (MAINBOARD → iBooster)  
+ * **RX ID:** 0x1A (iBooster → MAINBOARD)
+ *
+ * | Byte | Field | Description | Range |
+ * |------|--------|-------------|--------|
+ * | 0 | Brake Command | Target brake level (0–255) | 0–255 |
+ * | 1–7 | Reserved | — | — |
+ *
+ * **Feedback (0x1A)**  
+ * | Byte | Field | Description |
+ * |------|--------|-------------|
+ * | 0 | Brake Applied | % applied |
+ * | 1 | Duty Feedback | % |
+ * | 2–7 | Reserved | — |
+ *
+ * Notes:
+ * - Booster uses a nonlinear brake profile to model hydraulic feel.
+ * - Fault conditions are reported in feedback fault flag and optional error codes.
+ *
+ * ---
+ * @subsection can_steering Steering (EPS System)
+ * @brief CAN protocol for the Brushless ADAS EPS controller.
+ *
+ * **TX ID:** 0x314 (MAINBOARD → EPS)  
+ * **RX ID:** 0x18F (EPS → MAINBOARD)
+ *
+ * ### Command Frame (0x314)
+ * | Byte | Field | Description | Range |
+ * |------|--------|-------------|--------|
+ * | 0 | Mode Flags | bit0=Wire-control enable<br>bit2=Calibrate center | — |
+ * | 1–2 | Target Angle | Desired steering angle (int16) | −650° to +650° |
+ * | 3–4 | Angular Velocity | Commanded turn rate (uint16) | 50–520 °/s |
+ * | 5–7 | Reserved | — | — |
+ *
+ * Examples:
+ * - `04 00 00 00 00 00 00 00` → Calibrate current position to 0°  
+ * - `01 00 A0 00 00 00 00 00` → Rotate +180° at default speed
+ *
+ * ### Feedback Frame (0x18F)
+ * | Byte | Field | Description | Range |
+ * |------|--------|-------------|--------|
+ * | 0 | Status Flags | bit0=Wire-mode<br>bit1=Fault | — |
+ * | 1–2 | Current Angle | int16 | −650° to +650° |
+ * | 3–4 | Current Velocity | uint16 | 0–520 °/s |
+ * | 5 | Motor Current | int8 | −128–127 A |
+ * | 6 | ECU Temp | uint8 | °C |
+ * | 7 | Fault Code | enum (0x0–0xD) | see table |
+ *
+ * **Fault Codes**
+ * | Code | Meaning |
+ * |------|----------|
+ * | 0x0 | No fault |
+ * | 0x1 | Over-voltage |
+ * | 0x2 | Under-voltage |
+ * | 0x3 | Controller over-temp (mild) |
+ * | 0x4 | Controller over-temp (critical) |
+ * | 0x5 | Torque sensor fault |
+ * | 0x6 | Angle sensor fault |
+ * | 0x7 | Internal fault |
+ * | 0x8 | EEPROM fault |
+ * | 0x9 | Communication fault |
+ * | 0xA | Center not calibrated |
+ * | 0xB | Motor stall |
+ * | 0xC | Motor over-current |
+ * | 0xD | Motor/drive failure |
+ *
+ * Safety:
+ * - No valid CAN > 300 ms → ECU falls back to manual assist mode.
+ * - Torque/time thresholds trigger mode transitions (see spec).
+ *
+ * ---
+ * @subsection can_ultrasonic Ultrasonic (Distance Sensors)
+ * **TX ID:** 0x12 (ULTRASONIC → MAINBOARD)
+ *
+ * | Byte | Field | Description | Unit |
+ * |------|--------|-------------|-------|
+ * | 0–1 | Front-Left | Distance | cm |
+ * | 2–3 | Front-Right | Distance | cm |
+ * | 4–5 | Rear-Left | Distance | cm |
+ * | 6–7 | Rear-Right | Distance | cm |
+ *
+ * Notes:
+ * - Minimum range: 25 cm (below this triggers obstacle warning).
+ * - Maximum range: 600 cm (values above treated as "no object").
+ * - Sensors are polled sequentially to avoid echo cross-talk.
+ *
+
+ * @section ref Related Subsystems
+ * - @ref MAINBOARD
+ * - @ref THROTTLE_SYSTEM
+ * - @ref BOOSTER_SYSTEM
+ * - @ref STEERING_SYSTEM
+ * - @ref ULTRASONIC_SYSTEM
+ */

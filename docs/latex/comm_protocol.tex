@@ -1,0 +1,677 @@
+\chapter{Communication Protocols}
+\hypertarget{comm_protocol}{}\label{comm_protocol}\index{Communication Protocols@{Communication Protocols}}
+Defines UART and CAN data formats for all MAINBOARD subsystems.\hypertarget{index_overview}{}\doxysection{\texorpdfstring{System Overview}{System Overview}}\label{index_overview}
+The MAINBOARD coordinates multiple subsystems over a shared CAN network. Each subsystem communicates using fixed message identifiers (11-\/bit standard) and specific byte mappings.
+
+Below is a network diagram illustrating message flows between MAINBOARD and the subsystems (Throttle, Booster, Steering, Ultrasonic) plus UART telemetry\+:
+
+  
+\begin{DoxyInlineImage}
+\includegraphics[height=\baselineskip,keepaspectratio=true]{network.png}%System Network Diagram
+\end{DoxyInlineImage}
+   
+
+ {\itshape Figure 1 — CAN topology overview} \hypertarget{comm_protocol_uart}{}\doxysection{\texorpdfstring{UART Telemetry Protocol}{UART Telemetry Protocol}}\label{comm_protocol_uart}
+Binary 34-\/byte data frame ({\ttfamily uart\+\_\+data\mbox{[}34\mbox{]}}) sent via UART8 every 100 ms.\hypertarget{comm_protocol_uart_config}{}\doxysubsection{\texorpdfstring{Configuration}{Configuration}}\label{comm_protocol_uart_config}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Parameter   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Value    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Parameter   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Value    }\\\cline{1-2}
+\endhead
+Peripheral   &UART8    \\\cline{1-2}
+Baud Rate   &115200 bps    \\\cline{1-2}
+Format   &8N1    \\\cline{1-2}
+Direction   &Duplex   \\\cline{1-2}
+\end{longtabu}
+
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_uart_protocol}{}\doxysubsection{\texorpdfstring{Complete UART Query / Response Protocol}{Complete UART Query / Response Protocol}}\label{comm_protocol_uart_protocol}
+Defines the bidirectional serial protocol between MAINBOARD (slave) and Jetson (master) for data streaming, queries, and control commands.
+
+{\bfseries{Interface Characteristics}} \tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Parameter   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Value    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Parameter   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Value    }\\\cline{1-2}
+\endhead
+{\bfseries{Baud Rate}}   &115200 bps    \\\cline{1-2}
+{\bfseries{Frame Type}}   &8 data bits, 1 stop bit, no parity (8N1)    \\\cline{1-2}
+{\bfseries{Default Period}}   &100 ms (10 Hz)    \\\cline{1-2}
+{\bfseries{Protocol Type}}   &Query–\+Response   \\\cline{1-2}
+\end{longtabu}
+
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_uart_frame_structure}{}\doxysubsubsection{\texorpdfstring{Frame Structure}{Frame Structure}}\label{comm_protocol_uart_frame_structure}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{3}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Bytes   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Bytes   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endhead
+Header   &1   &Fixed {\ttfamily 0x\+A5}    \\\cline{1-3}
+Function Code   &1   &Defines command type    \\\cline{1-3}
+Data   &0–nn   &Variable payload    \\\cline{1-3}
+Checksum   &1   &Additive sum of all bytes from Header to last Data   \\\cline{1-3}
+\end{longtabu}
+
+
+Example query frame\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[0xA5]\ [0x01]\ [0xA6]}
+
+\end{DoxyCode}
+ Example response frame\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[0xA5]\ [0x11]\ [...data...]\ [Checksum]}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_uart_func}{}\doxysubsection{\texorpdfstring{Function Codes}{Function Codes}}\label{comm_protocol_uart_func}
+The protocol defines matching Query (0x00–0x06) and Response (0x10–0x16) codes\+:
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Query   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Response   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Data Length    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Query   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Response   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Data Length    }\\\cline{1-4}
+\endhead
+0x00   &0x10   &Stop streaming data   &0    \\\cline{1-4}
+0x01   &0x11   &Request start streaming data   &32    \\\cline{1-4}
+0x02   &0x12   &Request specific data bytes   &Variable    \\\cline{1-4}
+0x03   &0x13   &Batch Command (Drive, Brake, Steer)   &5    \\\cline{1-4}
+0x04   &0x14   &Drive Command   &3    \\\cline{1-4}
+0x05   &0x15   &Brake Command   &1    \\\cline{1-4}
+0x06   &0x16   &Steer Command   &1   \\\cline{1-4}
+\end{longtabu}
+
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_uart_stream}{}\doxysubsection{\texorpdfstring{Streaming Data Format (Response 0x11)}{Streaming Data Format (Response 0x11)}}\label{comm_protocol_uart_stream}
+The streaming response contains {\bfseries{complete vehicle telemetry}} (32 bytes total)\+:
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-4}
+\endhead
+0   &Header   &uint8\+\_\+t   &{\ttfamily 0x\+A5}    \\\cline{1-4}
+1   &Function Code   &uint8\+\_\+t   &{\ttfamily 0x11}    \\\cline{1-4}
+2   &Battery Percentage   &int8\+\_\+t   &0–100    \\\cline{1-4}
+3   &Charging Status   &uint8\+\_\+t   &0=Idle, 1=Charging    \\\cline{1-4}
+4–5   &RPM   &int16\+\_\+t   &Wheel speed (×0.1)    \\\cline{1-4}
+6   &Brake Percentage   &int8\+\_\+t   &0–100    \\\cline{1-4}
+7   &Steer Angle   &int8\+\_\+t   &−90° to +90°    \\\cline{1-4}
+8–9   &IMU X   &int16\+\_\+t   &Raw accel X    \\\cline{1-4}
+10–11   &IMU Y   &int16\+\_\+t   &Raw accel Y    \\\cline{1-4}
+12–13   &IMU Z   &int16\+\_\+t   &Raw accel Z    \\\cline{1-4}
+14–15   &IMU Yaw   &int16\+\_\+t   &−18000–18000 → ÷100 = −180°–180°    \\\cline{1-4}
+16–17   &IMU Pitch   &int16\+\_\+t   &−18000–18000 → ÷100 = −180°–180°    \\\cline{1-4}
+18–19   &IMU Roll   &int16\+\_\+t   &−18000–18000 → ÷100 = −180°–180°    \\\cline{1-4}
+20   &Radar Closest   &uint8\+\_\+t   &0–255 → ×0.01 m    \\\cline{1-4}
+21   &Ultrasonic Front   &uint8\+\_\+t   &0–255 → ×0.01 m    \\\cline{1-4}
+22   &Ultrasonic Rear   &uint8\+\_\+t   &0–255 → ×0.01 m    \\\cline{1-4}
+23   &Front Bumper   &uint8\+\_\+t   &0=Off, 1=Pressed    \\\cline{1-4}
+24   &Rear Bumper   &uint8\+\_\+t   &0=Off, 1=Pressed    \\\cline{1-4}
+25–28   &GPS Latitude   &float   &−90.0000° to +90.\+0000°    \\\cline{1-4}
+29–32   &GPS Longitude   &float   &−180.0000° to +180.\+0000°    \\\cline{1-4}
+33   &Checksum   &uint8\+\_\+t   &Sum of bytes 0–32   \\\cline{1-4}
+\end{longtabu}
+
+
+Query to enable streaming\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{A5\ 01\ A6}
+
+\end{DoxyCode}
+ Response (streaming data)\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{A5\ 11\ <34-\/\textcolor{keywordtype}{byte}\ payload>\ [Checksum]}
+
+\end{DoxyCode}
+
+
+Query to stop streaming\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{A5\ 00\ A5}
+
+\end{DoxyCode}
+ Response\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{A5\ 10\ B5}
+
+\end{DoxyCode}
+
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_uart_batch}{}\doxysubsection{\texorpdfstring{Batch Command (0x03 / 0x13)}{Batch Command (0x03 / 0x13)}}\label{comm_protocol_uart_batch}
+Allows simultaneous control of throttle, brake, and steering every 200 ms.
+
+{\bfseries{Query (0x03)}} \tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-4}
+\endhead
+0   &Header   &uint8\+\_\+t   &0x\+A5    \\\cline{1-4}
+1   &Function Code   &uint8\+\_\+t   &0x03    \\\cline{1-4}
+2–3   &RPM Target   &uint16\+\_\+t   &Desired RPM    \\\cline{1-4}
+4   &Direction   &uint8\+\_\+t   &0=Forward,1=Reverse    \\\cline{1-4}
+5   &Brake   &uint8\+\_\+t   &0=0\%,255=100\%    \\\cline{1-4}
+6   &Steer Angle   &int8\+\_\+t   &−120–120 (maps −30°–30°)    \\\cline{1-4}
+7   &Checksum   &uint8\+\_\+t   &Sum of bytes 0–6   \\\cline{1-4}
+\end{longtabu}
+
+
+{\bfseries{Response (0x13)}} Returns current measured values\+:
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{3}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endhead
+0   &Header ({\ttfamily 0x\+A5})   &Start    \\\cline{1-3}
+1   &Function Code ({\ttfamily 0x13})   &Acknowledge    \\\cline{1-3}
+2–3   &Measured RPM   &uint16\+\_\+t    \\\cline{1-3}
+4   &Direction   &0/1    \\\cline{1-3}
+5   &Brake   &0–255    \\\cline{1-3}
+6   &Steer Angle   &−120–120    \\\cline{1-3}
+7   &Checksum   &—   \\\cline{1-3}
+\end{longtabu}
+
+
+\DoxyHorRuler{0}
+ \DoxyHorRuler{0}
+ \hypertarget{comm_protocol_uart_cmd_individual}{}\doxysubsection{\texorpdfstring{Individual Control Commands}{Individual Control Commands}}\label{comm_protocol_uart_cmd_individual}
+Command–response frames for direct control of drive, brake, and steering actuators.
+
+Each command uses a {\bfseries{Query/\+Response}} model between the Jetson (master) and MAINBOARD (slave). The Jetson issues a control command every 100–200 ms. If no new command is received within 300 ms, the MAINBOARD automatically applies a {\bfseries{safety stop}} (brake = 100\%, throttle = 0, steer = 0°).
+
+All commands follow this structure\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[Header\ 0xA5]\ [Function\ Code]\ [Data\ ...]\ [Checksum]}
+
+\end{DoxyCode}
+
+
+The {\bfseries{response frame}} always uses the Function Code + 0x10 pattern. Example\+: ~\newline
+
+\begin{DoxyItemize}
+\item Query 0x04 → Response 0x14 ~\newline
+
+\item Query 0x05 → Response 0x15 ~\newline
+
+\item Query 0x06 → Response 0x16 ~\newline
+
+\end{DoxyItemize}
+
+{\bfseries{Checksum Calculation\+:}} ~\newline
+ Add all bytes from Header (0x\+A5) to the last data byte, keep the lowest 8 bits.
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_uart_drive}{}\doxysubsubsection{\texorpdfstring{Drive Command (0x04 / 0x14)}{Drive Command (0x04 / 0x14)}}\label{comm_protocol_uart_drive}
+Controls the throttle subsystem (CAN2\+ANALOG) through UART interface.
+
+{\bfseries{Query (Jetson → MAINBOARD)}} \tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type / Range    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type / Range    }\\\cline{1-4}
+\endhead
+0   &Header   &Fixed {\ttfamily 0x\+A5}   &uint8\+\_\+t    \\\cline{1-4}
+1   &Function Code   &{\ttfamily 0x04}   &uint8\+\_\+t    \\\cline{1-4}
+2–3   &RPM Target   &Desired wheel speed ×0.1   &uint16\+\_\+t    \\\cline{1-4}
+4   &Direction   &0=Forward, 1=Reverse   &uint8\+\_\+t    \\\cline{1-4}
+5   &Checksum   &Additive sum of bytes 0–4   &uint8\+\_\+t   \\\cline{1-4}
+\end{longtabu}
+
+
+{\bfseries{Response (MAINBOARD → Jetson)}} \tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type / Range    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type / Range    }\\\cline{1-4}
+\endhead
+0   &Header   &{\ttfamily 0x\+A5}   &uint8\+\_\+t    \\\cline{1-4}
+1   &Function Code   &{\ttfamily 0x14} (acknowledge)   &uint8\+\_\+t    \\\cline{1-4}
+2–3   &Measured RPM   &Current wheel speed ×0.1   &uint16\+\_\+t    \\\cline{1-4}
+4   &Direction   &0=Forward,1=Reverse   &uint8\+\_\+t    \\\cline{1-4}
+5   &Checksum   &Additive sum 0–4   &uint8\+\_\+t   \\\cline{1-4}
+\end{longtabu}
+
+
+{\bfseries{Example}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{→\ Jetson:\ \ \ A5\ 04\ 10\ 27\ 00\ E0\ \ \ (Request\ +10000\ RPM\ Forward)}
+\DoxyCodeLine{←\ Response:\ A5\ 14\ 0F\ 26\ 00\ DE\ \ \ (Actual\ +9750\ RPM\ Forward)}
+
+\end{DoxyCode}
+
+
+{\bfseries{Behavior}}
+\begin{DoxyItemize}
+\item Throttle control is internally forwarded to the CAN2\+ANALOG subsystem. ~\newline
+
+\item The MAINBOARD scales RPM → PWM analog voltage output (1.\+0–3.3 V). ~\newline
+
+\item Direction = 1 triggers reverse safety limiter (max 30\% RPM). ~\newline
+
+\item Command timeout (no update in 300 ms) forces throttle output = 0\%.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_uart_brake}{}\doxysubsubsection{\texorpdfstring{Brake Command (0x05 / 0x15)}{Brake Command (0x05 / 0x15)}}\label{comm_protocol_uart_brake}
+Controls the Booster (brake actuator) via UART interface.
+
+{\bfseries{Query (Jetson → MAINBOARD)}} \tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type / Range    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type / Range    }\\\cline{1-4}
+\endhead
+0   &Header   &Fixed {\ttfamily 0x\+A5}   &uint8\+\_\+t    \\\cline{1-4}
+1   &Function Code   &{\ttfamily 0x05}   &uint8\+\_\+t    \\\cline{1-4}
+2   &Brake Command   &Desired brake intensity   &uint8\+\_\+t (0–255)    \\\cline{1-4}
+3   &Checksum   &Additive sum 0–2   &uint8\+\_\+t   \\\cline{1-4}
+\end{longtabu}
+
+
+{\bfseries{Response (MAINBOARD → Jetson)}} \tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type / Range    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type / Range    }\\\cline{1-4}
+\endhead
+0   &Header   &{\ttfamily 0x\+A5}   &uint8\+\_\+t    \\\cline{1-4}
+1   &Function Code   &{\ttfamily 0x15}   &uint8\+\_\+t    \\\cline{1-4}
+2   &Brake Applied   &Actual brake intensity   &uint8\+\_\+t    \\\cline{1-4}
+3   &Fault Status   &0=OK,1=FAULT   &uint8\+\_\+t    \\\cline{1-4}
+4   &Checksum   &Additive sum 0–3   &uint8\+\_\+t   \\\cline{1-4}
+\end{longtabu}
+
+
+{\bfseries{Example}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{→\ Jetson:\ \ \ A5\ 05\ 7F\ 29\ \ \ (Set\ \mbox{\hyperlink{group___m_a_i_n_b_o_a_r_d_ga15fe3ce8250964de6f0317ff2653632c}{Brake}}\ =\ 127\ /\ 50\%)}
+\DoxyCodeLine{←\ Response:\ A5\ 15\ 80\ 00\ 3A\ \ \ (Confirmed\ \mbox{\hyperlink{group___m_a_i_n_b_o_a_r_d_ga15fe3ce8250964de6f0317ff2653632c}{Brake}}\ =\ 128,\ No\ Fault)}
+
+\end{DoxyCode}
+
+
+{\bfseries{Behavior}}
+\begin{DoxyItemize}
+\item The MAINBOARD relays brake command to the Booster system (CAN ID 0x25). ~\newline
+
+\item Nonlinear brake curve maps 0–255 to real PWM duty (\%). ~\newline
+
+\item Feedback reports current brake percentage and fault status. ~\newline
+
+\item If CAN feedback lost, Brake = 255 (full stop) is automatically asserted.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_uart_steer}{}\doxysubsubsection{\texorpdfstring{Steering Command (0x06 / 0x16)}{Steering Command (0x06 / 0x16)}}\label{comm_protocol_uart_steer}
+Controls the Steering (EPS) subsystem via UART.
+
+{\bfseries{Query (Jetson → MAINBOARD)}} \tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type / Range    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type / Range    }\\\cline{1-4}
+\endhead
+0   &Header   &Fixed {\ttfamily 0x\+A5}   &uint8\+\_\+t    \\\cline{1-4}
+1   &Function Code   &{\ttfamily 0x06}   &uint8\+\_\+t    \\\cline{1-4}
+2   &Steer Angle   &Desired angle offset   &int8\+\_\+t (−120–120)    \\\cline{1-4}
+3   &Checksum   &Additive sum 0–2   &uint8\+\_\+t   \\\cline{1-4}
+\end{longtabu}
+
+
+{\bfseries{Response (MAINBOARD → Jetson)}} \tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type / Range    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Type / Range    }\\\cline{1-4}
+\endhead
+0   &Header   &{\ttfamily 0x\+A5}   &uint8\+\_\+t    \\\cline{1-4}
+1   &Function Code   &{\ttfamily 0x16}   &uint8\+\_\+t    \\\cline{1-4}
+2   &Actual Angle   &Current steering angle   &int8\+\_\+t    \\\cline{1-4}
+3   &Fault Code   &From EPS system   &uint8\+\_\+t    \\\cline{1-4}
+4   &Checksum   &Additive sum 0–3   &uint8\+\_\+t   \\\cline{1-4}
+\end{longtabu}
+
+
+{\bfseries{Example}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{→\ Jetson:\ \ \ A5\ 06\ 1E\ C9\ \ \ (Request\ +30°\ steer)}
+\DoxyCodeLine{←\ Response:\ A5\ 16\ 1D\ 00\ D8\ \ \ (Confirmed\ +29°,\ OK)}
+
+\end{DoxyCode}
+
+
+{\bfseries{Behavior}}
+\begin{DoxyItemize}
+\item The MAINBOARD converts UART angle command → EPS CAN frame (0x314). ~\newline
+
+\item Saturates to ±650° internally to avoid motor overtravel. ~\newline
+
+\item EPS returns current angle and fault code to MAINBOARD, forwarded to Jetson. ~\newline
+
+\item Faults include\+: over-\/temp, torque sensor, overcurrent (see Steering section).
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_uart_timing}{}\doxysubsubsection{\texorpdfstring{Command Timing}{Command Timing}}\label{comm_protocol_uart_timing}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{3}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Parameter   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Value   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Parameter   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Value   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endhead
+{\bfseries{Cycle Time}}   &100–200 ms   &Recommended update period    \\\cline{1-3}
+{\bfseries{Timeout}}   &300 ms   &Safety stop threshold    \\\cline{1-3}
+{\bfseries{Checksum}}   &8-\/bit additive   &Sum of all bytes except checksum    \\\cline{1-3}
+{\bfseries{Response Delay}}   &≤10 ms   &MAINBOARD reply latency   \\\cline{1-3}
+\end{longtabu}
+
+
+\begin{DoxyNote}{Note}
+
+\begin{DoxyItemize}
+\item All integers use {\bfseries{little-\/endian byte order}}. ~\newline
+
+\item Invalid checksum or header ({\ttfamily 0x\+A5}) causes frame rejection. ~\newline
+
+\item Function Code + 0x10 pattern is mandatory for all responses. ~\newline
+
+\item Commands may be mixed with streaming (0x11) if real-\/time telemetry is active.
+\end{DoxyItemize}
+\end{DoxyNote}
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_can}{}\doxysection{\texorpdfstring{CAN Bus Protocols}{CAN Bus Protocols}}\label{comm_protocol_can}
+CAN data structure and subsystem-\/specific frame mappings.\hypertarget{comm_protocol_can_config}{}\doxysubsection{\texorpdfstring{Configuration}{Configuration}}\label{comm_protocol_can_config}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Parameter   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Value    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Parameter   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Value    }\\\cline{1-2}
+\endhead
+{\bfseries{Baud Rate}}   &500 kbps    \\\cline{1-2}
+{\bfseries{Frame Type}}   &Standard 11-\/bit    \\\cline{1-2}
+{\bfseries{Mode}}   &Normal    \\\cline{1-2}
+{\bfseries{Termination}}   &120 Ω at both ends   \\\cline{1-2}
+\end{longtabu}
+
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_can_throttle}{}\doxysubsection{\texorpdfstring{Throttle (CAN2\+ANALOG)}{Throttle (CAN2\+ANALOG)}}\label{comm_protocol_can_throttle}
+{\bfseries{TX ID\+:}} 0x3B (MAINBOARD → CAN2\+ANALOG) ~\newline
+ {\bfseries{RX ID\+:}} 0x3A (CAN2\+ANALOG → MAINBOARD)
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Range    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Range    }\\\cline{1-4}
+\endhead
+0–1   &RPM Command   &Target throttle speed (uint16)   &0–65535    \\\cline{1-4}
+2   &Direction   &0 = Forward, 1 = Reverse   &—    \\\cline{1-4}
+3–7   &Reserved   &—   &—   \\\cline{1-4}
+\end{longtabu}
+
+
+{\bfseries{Feedback (0x3A)}} ~\newline
+ \tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{3}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endhead
+0–1   &Output Voltage   &mV    \\\cline{1-3}
+2   &Direction   &0=FWD, 1=REV    \\\cline{1-3}
+3   &Controller Status   &OK/\+FAULT    \\\cline{1-3}
+4–5   &Measured RPM   &uint16    \\\cline{1-3}
+6–7   &Reserved   &—   \\\cline{1-3}
+\end{longtabu}
+
+
+Operational notes\+:
+\begin{DoxyItemize}
+\item Watchdog\+: throttle resets to safe state if CAN lost \texorpdfstring{$>$}{>} 200 ms.
+\item PWM mapping\+: firmware maps RPM command → PWM duty via calibrated curve.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_can_booster}{}\doxysubsection{\texorpdfstring{Brake (i\+Booster)}{Brake (i\+Booster)}}\label{comm_protocol_can_booster}
+{\bfseries{TX ID\+:}} 0x1B (MAINBOARD → i\+Booster) ~\newline
+ {\bfseries{RX ID\+:}} 0x1A (i\+Booster → MAINBOARD)
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Range    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Range    }\\\cline{1-4}
+\endhead
+0   &Brake Command   &Target brake level (0–255)   &0–255    \\\cline{1-4}
+1–7   &Reserved   &—   &—   \\\cline{1-4}
+\end{longtabu}
+
+
+{\bfseries{Feedback (0x1A)}} ~\newline
+ \tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{3}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description    }\\\cline{1-3}
+\endhead
+0   &Brake Applied   &\% applied    \\\cline{1-3}
+1   &Duty Feedback   &\%    \\\cline{1-3}
+2–7   &Reserved   &—   \\\cline{1-3}
+\end{longtabu}
+
+
+Notes\+:
+\begin{DoxyItemize}
+\item Booster uses a nonlinear brake profile to model hydraulic feel.
+\item Fault conditions are reported in feedback fault flag and optional error codes.
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_can_steering}{}\doxysubsection{\texorpdfstring{Steering (EPS System)}{Steering (EPS System)}}\label{comm_protocol_can_steering}
+CAN protocol for the Brushless ADAS EPS controller.
+
+{\bfseries{TX ID\+:}} 0x314 (MAINBOARD → EPS) ~\newline
+ {\bfseries{RX ID\+:}} 0x18F (EPS → MAINBOARD)\hypertarget{comm_protocol_autotoc_md14}{}\doxysubsubsection{\texorpdfstring{Command Frame (0x314)}{Command Frame (0x314)}}\label{comm_protocol_autotoc_md14}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Range    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Range    }\\\cline{1-4}
+\endhead
+0   &Mode Flags   &bit0=Wire-\/control enable~\newline
+bit2=Calibrate center   &—    \\\cline{1-4}
+1–2   &Target Angle   &Desired steering angle (int16)   &−650° to +650°    \\\cline{1-4}
+3–4   &Angular Velocity   &Commanded turn rate (uint16)   &50–520 °/s    \\\cline{1-4}
+5–7   &Reserved   &—   &—   \\\cline{1-4}
+\end{longtabu}
+
+
+Examples\+:
+\begin{DoxyItemize}
+\item {\ttfamily 04 00 00 00 00 00 00 00} → Calibrate current position to 0° ~\newline
+
+\item {\ttfamily 01 00 A0 00 00 00 00 00} → Rotate +180° at default speed
+\end{DoxyItemize}\hypertarget{comm_protocol_autotoc_md15}{}\doxysubsubsection{\texorpdfstring{Feedback Frame (0x18F)}{Feedback Frame (0x18F)}}\label{comm_protocol_autotoc_md15}
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Range    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Range    }\\\cline{1-4}
+\endhead
+0   &Status Flags   &bit0=Wire-\/mode~\newline
+bit1=Fault   &—    \\\cline{1-4}
+1–2   &Current Angle   &int16   &−650° to +650°    \\\cline{1-4}
+3–4   &Current Velocity   &uint16   &0–520 °/s    \\\cline{1-4}
+5   &Motor Current   &int8   &−128–127 A    \\\cline{1-4}
+6   &ECU Temp   &uint8   &°C    \\\cline{1-4}
+7   &Fault Code   &enum (0x0–0xD)   &see table   \\\cline{1-4}
+\end{longtabu}
+
+
+{\bfseries{Fault Codes}} \tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Code   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Meaning    }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Code   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Meaning    }\\\cline{1-2}
+\endhead
+0x0   &No fault    \\\cline{1-2}
+0x1   &Over-\/voltage    \\\cline{1-2}
+0x2   &Under-\/voltage    \\\cline{1-2}
+0x3   &Controller over-\/temp (mild)    \\\cline{1-2}
+0x4   &Controller over-\/temp (critical)    \\\cline{1-2}
+0x5   &Torque sensor fault    \\\cline{1-2}
+0x6   &Angle sensor fault    \\\cline{1-2}
+0x7   &Internal fault    \\\cline{1-2}
+0x8   &EEPROM fault    \\\cline{1-2}
+0x9   &Communication fault    \\\cline{1-2}
+0xA   &Center not calibrated    \\\cline{1-2}
+0xB   &Motor stall    \\\cline{1-2}
+0xC   &Motor over-\/current    \\\cline{1-2}
+0xD   &Motor/drive failure   \\\cline{1-2}
+\end{longtabu}
+
+
+Safety\+:
+\begin{DoxyItemize}
+\item No valid CAN \texorpdfstring{$>$}{>} 300 ms → ECU falls back to manual assist mode.
+\item Torque/time thresholds trigger mode transitions (see spec).
+\end{DoxyItemize}
+
+\DoxyHorRuler{0}
+ \hypertarget{comm_protocol_can_ultrasonic}{}\doxysubsection{\texorpdfstring{Ultrasonic (Distance Sensors)}{Ultrasonic (Distance Sensors)}}\label{comm_protocol_can_ultrasonic}
+{\bfseries{TX ID\+:}} 0x12 (ULTRASONIC → MAINBOARD)
+
+\tabulinesep=1mm
+\begin{longtabu}spread 0pt [c]{*{4}{|X[-1]}|}
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Unit    }\\\cline{1-4}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Byte   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Field   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Description   }&\PBS\centering \cellcolor{\tableheadbgcolor}\textbf{ Unit    }\\\cline{1-4}
+\endhead
+0–1   &Front-\/\+Left   &Distance   &cm    \\\cline{1-4}
+2–3   &Front-\/\+Right   &Distance   &cm    \\\cline{1-4}
+4–5   &Rear-\/\+Left   &Distance   &cm    \\\cline{1-4}
+6–7   &Rear-\/\+Right   &Distance   &cm   \\\cline{1-4}
+\end{longtabu}
+
+
+Notes\+:
+\begin{DoxyItemize}
+\item Minimum range\+: 25 cm (below this triggers obstacle warning).
+\item Maximum range\+: 600 cm (values above treated as "{}no object"{}).
+\item Sensors are polled sequentially to avoid echo cross-\/talk.
+\end{DoxyItemize}\hypertarget{comm_protocol_ref}{}\doxysection{\texorpdfstring{Related Subsystems}{Related Subsystems}}\label{comm_protocol_ref}
+
+\begin{DoxyItemize}
+\item \doxylink{group___m_a_i_n_b_o_a_r_d}{MAINBOARD}
+\item THROTTLE\+\_\+\+SYSTEM
+\item BOOSTER\+\_\+\+SYSTEM
+\item STEERING\+\_\+\+SYSTEM
+\item ULTRASONIC\+\_\+\+SYSTEM 
+\end{DoxyItemize}

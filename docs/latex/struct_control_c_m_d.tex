@@ -1,0 +1,61 @@
+\doxysection{Control\+CMD Struct Reference}
+\hypertarget{struct_control_c_m_d}{}\label{struct_control_c_m_d}\index{ControlCMD@{ControlCMD}}
+
+
+Control command structure containing throttle/brake/steer/timestamp.  
+
+
+\doxysubsubsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+int16\+\_\+t \mbox{\hyperlink{struct_control_c_m_d_a3025bc49931851d7f19d90d5a6a192bd}{throttle}}
+\item 
+int16\+\_\+t \mbox{\hyperlink{struct_control_c_m_d_a5fc5018f750fa11e47f294469c09c0aa}{prev\+\_\+throttle}}
+\item 
+uint8\+\_\+t \mbox{\hyperlink{struct_control_c_m_d_afbba47eb381bd515a377c84372d1c5ee}{brake}}
+\item 
+int8\+\_\+t \mbox{\hyperlink{struct_control_c_m_d_aaf0aa2bb2d3c0389ea3598f1f69e3343}{steering}}
+\item 
+uint32\+\_\+t \mbox{\hyperlink{struct_control_c_m_d_adfbef9f1f245bd1621f0325434697cc7}{timestamp}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Control command structure containing throttle/brake/steer/timestamp. 
+
+\doxysubsection{Field Documentation}
+\Hypertarget{struct_control_c_m_d_afbba47eb381bd515a377c84372d1c5ee}\index{ControlCMD@{ControlCMD}!brake@{brake}}
+\index{brake@{brake}!ControlCMD@{ControlCMD}}
+\doxysubsubsection{\texorpdfstring{brake}{brake}}
+{\footnotesize\ttfamily \label{struct_control_c_m_d_afbba47eb381bd515a377c84372d1c5ee} 
+uint8\+\_\+t Control\+CMD\+::brake}
+
+\Hypertarget{struct_control_c_m_d_a5fc5018f750fa11e47f294469c09c0aa}\index{ControlCMD@{ControlCMD}!prev\_throttle@{prev\_throttle}}
+\index{prev\_throttle@{prev\_throttle}!ControlCMD@{ControlCMD}}
+\doxysubsubsection{\texorpdfstring{prev\_throttle}{prev\_throttle}}
+{\footnotesize\ttfamily \label{struct_control_c_m_d_a5fc5018f750fa11e47f294469c09c0aa} 
+int16\+\_\+t Control\+CMD\+::prev\+\_\+throttle}
+
+\Hypertarget{struct_control_c_m_d_aaf0aa2bb2d3c0389ea3598f1f69e3343}\index{ControlCMD@{ControlCMD}!steering@{steering}}
+\index{steering@{steering}!ControlCMD@{ControlCMD}}
+\doxysubsubsection{\texorpdfstring{steering}{steering}}
+{\footnotesize\ttfamily \label{struct_control_c_m_d_aaf0aa2bb2d3c0389ea3598f1f69e3343} 
+int8\+\_\+t Control\+CMD\+::steering}
+
+\Hypertarget{struct_control_c_m_d_a3025bc49931851d7f19d90d5a6a192bd}\index{ControlCMD@{ControlCMD}!throttle@{throttle}}
+\index{throttle@{throttle}!ControlCMD@{ControlCMD}}
+\doxysubsubsection{\texorpdfstring{throttle}{throttle}}
+{\footnotesize\ttfamily \label{struct_control_c_m_d_a3025bc49931851d7f19d90d5a6a192bd} 
+int16\+\_\+t Control\+CMD\+::throttle}
+
+\Hypertarget{struct_control_c_m_d_adfbef9f1f245bd1621f0325434697cc7}\index{ControlCMD@{ControlCMD}!timestamp@{timestamp}}
+\index{timestamp@{timestamp}!ControlCMD@{ControlCMD}}
+\doxysubsubsection{\texorpdfstring{timestamp}{timestamp}}
+{\footnotesize\ttfamily \label{struct_control_c_m_d_adfbef9f1f245bd1621f0325434697cc7} 
+uint32\+\_\+t Control\+CMD\+::timestamp}
+
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+MAINBOARD/main.\+c\end{DoxyCompactItemize}

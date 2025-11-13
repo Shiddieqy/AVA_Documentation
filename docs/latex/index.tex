@@ -1,0 +1,25 @@
+\chapter{AVA LLC MAINBOARD Firmware}
+\hypertarget{index}{}\label{index}\index{AVA LLC MAINBOARD Firmware@{AVA LLC MAINBOARD Firmware}}
+Central control firmware for distributed CAN-\/based subsystems.
+
+Central control firmware for distributed CAN-\/based subsystems.  \hypertarget{index_intro}{}\doxysection{\texorpdfstring{Introduction}{Introduction}}\label{index_intro}
+The {\bfseries{MAINBOARD}} subsystem is the central controller for the AVA LLC system. It coordinates communication between vehicle subsystems via CAN and UART, managing the following components\+:
+\begin{DoxyItemize}
+\item THROTTLE\+\_\+\+SYSTEM (CAN2\+ANALOG)
+\item BOOSTER\+\_\+\+SYSTEM (Brake)
+\item STEERING\+\_\+\+SYSTEM (EPS)
+\item ULTRASONIC\+\_\+\+SYSTEM (Distance sensing)
+\end{DoxyItemize}\hypertarget{index_overview}{}\doxysection{\texorpdfstring{System Overview}{System Overview}}\label{index_overview}
+The MAINBOARD interfaces with distributed STM32-\/based modules over the CAN bus and streams telemetry data over UART to a host.
+
+
+\begin{DoxyItemize}
+\item {\bfseries{CAN\+:}} Real-\/time command and feedback network (500 kbps)
+\item {\bfseries{UART\+:}} Telemetry and diagnostics (115200 bps)
+\item {\bfseries{PWM\+:}} Analog control output for throttle
+\item {\bfseries{GPIO\+:}} Safety inputs and system indicators
+\end{DoxyItemize}\hypertarget{index_comm}{}\doxysection{\texorpdfstring{Communication Protocols}{Communication Protocols}}\label{index_comm}
+Detailed message formats for all communication channels are described in \doxysectlink{comm_protocol}{Communication Protocols}{0}.\hypertarget{index_author}{}\doxysection{\texorpdfstring{Author}{Author}}\label{index_author}
+Developed by {\bfseries{Shiddieqy}} ~\newline
+ Version {\bfseries{1.\+1.\+0}} ~\newline
+ Date {\bfseries{2025-\/11-\/11}} 

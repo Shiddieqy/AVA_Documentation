@@ -1,0 +1,1182 @@
+\doxysection{MAINBOARD/main.c File Reference}
+\hypertarget{main_8c}{}\label{main_8c}\index{MAINBOARD/main.c@{MAINBOARD/main.c}}
+
+
+Main program body for STM32-\/based vehicle control system.  
+
+
+{\ttfamily \#include "{}main.\+h"{}}\newline
+{\ttfamily \#include "{}cmsis\+\_\+os.\+h"{}}\newline
+\doxysubsubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct_control_c_m_d}{Control\+CMD}}
+\begin{DoxyCompactList}\small\item\em Control command structure containing throttle/brake/steer/timestamp. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{main_8c_a4bef1684c11775456cc06fd60b23c1f2}{THROTTLE\+\_\+\+FILTER}}~0.\+1
+\begin{DoxyCompactList}\small\item\em Smoothing factor for throttle input (0..1). \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{main_8c_a0806cd14a1c22ddde1d346a8271c2e25}{ULTRASONIC\+\_\+\+THRESHOLD}}~0
+\begin{DoxyCompactList}\small\item\em Threshold (in raw units) under which ultrasonic sensors trigger proximity actions. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{main_8c_acfa1763cec78e3b59838f5b51a31b657}{ULTRASONIC\+\_\+\+BOT\+\_\+\+THRESHOLD}}~70
+\begin{DoxyCompactList}\small\item\em Lower bound threshold for ultrasonic sensors mapping to brake action. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{main_8c_ab0249d81dd53336b7810ebcf29511210}{UART\+\_\+\+BUF\+\_\+\+SIZE}}~32
+\item 
+\#define \mbox{\hyperlink{main_8c_a1af831dd6bf2216d6fbf4142ab8c8b00}{UART1\+\_\+\+BUF\+\_\+\+SIZE}}~5
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{main_8c_a840291bc02cba5474a4cb46a9b9566fe}{main}} (void)
+\begin{DoxyCompactList}\small\item\em The application entry point. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_a70af21c671abfcc773614a9a4f63d920}{System\+Clock\+\_\+\+Config}} (void)
+\begin{DoxyCompactList}\small\item\em System Clock Configuration. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_a336c5acb34a801b2984e602b97ed7b73}{Periph\+Common\+Clock\+\_\+\+Config}} (void)
+\begin{DoxyCompactList}\small\item\em Peripherals Common Clock Configuration. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{main_8c_aa025a12d45f60c7d0eae249e61f0c7f9}{\+\_\+write}} (int file, char \texorpdfstring{$\ast$}{*}ptr, int len)
+\begin{DoxyCompactList}\small\item\em Reimplements write syscall used by printf to route through UART8. \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_a4466af40477fad9abd9287dc003013fc}{ceksum}} (uint8\+\_\+t \texorpdfstring{$\ast$}{*}msg, uint16\+\_\+t array\+\_\+size)
+\begin{DoxyCompactList}\small\item\em Compute checksum of a message buffer. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_a738f33194888982179443105306e5f96}{query\+\_\+request\+\_\+data}} (uint8\+\_\+t \texorpdfstring{$\ast$}{*}msg)
+\begin{DoxyCompactList}\small\item\em Handle query request messages received over UART. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_af0798246d50bcef987b5bc4b74e6a364}{parse\+\_\+command}} (uint8\+\_\+t \texorpdfstring{$\ast$}{*}msg)
+\begin{DoxyCompactList}\small\item\em Parse incoming UART commands and dispatch appropriate actions. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_ae494a9643f29b87d6d81e5264e60e57b}{HAL\+\_\+\+UART\+\_\+\+Rx\+Cplt\+Callback}} (UART\+\_\+\+Handle\+Type\+Def \texorpdfstring{$\ast$}{*}huart)
+\begin{DoxyCompactList}\small\item\em UART receive complete callback used by HAL interrupt mode. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_a5f68b90d4a72b12ea2eeb7a2890f244f}{send\+\_\+uart}} (void \texorpdfstring{$\ast$}{*}argument)
+\begin{DoxyCompactList}\small\item\em Function implementing the default\+Task thread (send\+\_\+uart). \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_ab999438b5580f4a0566c39283b5e6080}{ezkontrol}} (void \texorpdfstring{$\ast$}{*}argument)
+\begin{DoxyCompactList}\small\item\em Function implementing the my\+Task02 thread (ezkontrol). \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_a70f73d74fe913c03e6f604659b1767b9}{canbus\+\_\+sampling}} (void \texorpdfstring{$\ast$}{*}argument)
+\begin{DoxyCompactList}\small\item\em Function implementing the my\+Task03 thread (canbus\+\_\+sampling). \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_ad1974d32f9add5c8ff68593b48c98be0}{Steering}} (void \texorpdfstring{$\ast$}{*}argument)
+\begin{DoxyCompactList}\small\item\em Function implementing the my\+Task04 thread (Steering). \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_a15fe3ce8250964de6f0317ff2653632c}{Brake}} (void \texorpdfstring{$\ast$}{*}argument)
+\begin{DoxyCompactList}\small\item\em Function implementing the my\+Task05 thread (Brake). \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_a8203aa70a52565297789b53a0d937791}{safety\+\_\+system}} (void \texorpdfstring{$\ast$}{*}argument)
+\begin{DoxyCompactList}\small\item\em Function implementing the my\+Task06 thread (safety\+\_\+system). \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_a8a3b0ad512a6e6c6157440b68d395eac}{HAL\+\_\+\+TIM\+\_\+\+Period\+Elapsed\+Callback}} (TIM\+\_\+\+Handle\+Type\+Def \texorpdfstring{$\ast$}{*}htim)
+\begin{DoxyCompactList}\small\item\em Period elapsed callback in non blocking mode. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_a1730ffe1e560465665eb47d9264826f9}{Error\+\_\+\+Handler}} (void)
+\begin{DoxyCompactList}\small\item\em This function is executed in case of error occurrence. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+FDCAN\+\_\+\+Handle\+Type\+Def \mbox{\hyperlink{main_8c_af71d0ea733e88dc84fb4506e3bb5d8ce}{hfdcan2}}
+\begin{DoxyCompactList}\small\item\em FDCAN handle for FDCAN2 peripheral. \end{DoxyCompactList}\item 
+UART\+\_\+\+Handle\+Type\+Def \mbox{\hyperlink{main_8c_a5c07cbc82baf01ac2608c07b86332a67}{huart8}}
+\begin{DoxyCompactList}\small\item\em UART handle for UART8. \end{DoxyCompactList}\item 
+UART\+\_\+\+Handle\+Type\+Def \mbox{\hyperlink{main_8c_a2cf715bef37f7e8ef385a30974a5f0d5}{huart1}}
+\begin{DoxyCompactList}\small\item\em UART handle for USART1. \end{DoxyCompactList}\item 
+UART\+\_\+\+Handle\+Type\+Def \mbox{\hyperlink{main_8c_aa9479c261d65eecedd3d9582f7f0f89c}{huart2}}
+\begin{DoxyCompactList}\small\item\em UART handle for USART2. \end{DoxyCompactList}\item 
+os\+Thread\+Id\+\_\+t \mbox{\hyperlink{main_8c_a6a263905468b0c37de4ee5e50ede4e74}{default\+Task\+Handle}}
+\item 
+const os\+Thread\+Attr\+\_\+t \mbox{\hyperlink{main_8c_a25fbb54afdba71c24ba51ed50166ac8d}{default\+Task\+\_\+attributes}}
+\item 
+os\+Thread\+Id\+\_\+t \mbox{\hyperlink{main_8c_a2d2b138012cae0c08ec4af86d33dc579}{my\+Task02\+Handle}}
+\item 
+const os\+Thread\+Attr\+\_\+t \mbox{\hyperlink{main_8c_a6d405d334dca4c57ae3d18c7bc2040d2}{my\+Task02\+\_\+attributes}}
+\item 
+os\+Thread\+Id\+\_\+t \mbox{\hyperlink{main_8c_a329f150edda503ebc9ddbbf63cca8e26}{my\+Task03\+Handle}}
+\item 
+const os\+Thread\+Attr\+\_\+t \mbox{\hyperlink{main_8c_a1e3a8b648e3d8f5b47ac5eeec9581db0}{my\+Task03\+\_\+attributes}}
+\item 
+os\+Thread\+Id\+\_\+t \mbox{\hyperlink{main_8c_aef8c302b617a2329f03faf89a3796b2b}{my\+Task04\+Handle}}
+\item 
+const os\+Thread\+Attr\+\_\+t \mbox{\hyperlink{main_8c_a92121c9d4871cbd24a3536f81b0a49b0}{my\+Task04\+\_\+attributes}}
+\item 
+os\+Thread\+Id\+\_\+t \mbox{\hyperlink{main_8c_a30fa863f442d84c64e5fdaf20aa89673}{my\+Task05\+Handle}}
+\item 
+const os\+Thread\+Attr\+\_\+t \mbox{\hyperlink{main_8c_a489c45e33b8a8fac2875e16e14628f20}{my\+Task05\+\_\+attributes}}
+\item 
+os\+Thread\+Id\+\_\+t \mbox{\hyperlink{main_8c_a2964f031caf33bc9320b5ef243f55abd}{my\+Task06\+Handle}}
+\item 
+const os\+Thread\+Attr\+\_\+t \mbox{\hyperlink{main_8c_ad82e06bb4c5badd3595dd84e47bb2e49}{my\+Task06\+\_\+attributes}}
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_a895c4854f46560e483400793c53980e4}{uart\+\_\+data}} \mbox{[}34\mbox{]}
+\begin{DoxyCompactList}\small\item\em Telemetry packet to be streamed over UART. \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_ad5e2a0dec612328a86551a978d91ed10}{uart1\+\_\+data}} \mbox{[}100\mbox{]}
+\begin{DoxyCompactList}\small\item\em Local buffer for incoming UART1 data copy. \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_adee47efb11336ab0282dc184bee99467}{uart\+\_\+byte8}}
+\begin{DoxyCompactList}\small\item\em Single-\/byte temporary storage for UART interrupts (UART8). \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_affd5fa72df130fdd9e5590850506729a}{uart\+\_\+byte1}}
+\begin{DoxyCompactList}\small\item\em Single-\/byte temporary storage for UART interrupts (USART1/2). \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_a64a393a271595a2e2a16270cf7a4e025}{uart\+\_\+rx\+\_\+buffer}} \mbox{[}\mbox{\hyperlink{main_8c_ab0249d81dd53336b7810ebcf29511210}{UART\+\_\+\+BUF\+\_\+\+SIZE}}\mbox{]}
+\begin{DoxyCompactList}\small\item\em Circular RX buffer for UART8 asynchronous reception. \end{DoxyCompactList}\item 
+uint16\+\_\+t \mbox{\hyperlink{main_8c_a5537ad53848381767daf0a731f8fd009}{uart\+\_\+index}} = 0
+\begin{DoxyCompactList}\small\item\em Index into uart\+\_\+rx\+\_\+buffer for next write position. \end{DoxyCompactList}\item 
+char \mbox{\hyperlink{main_8c_aca62292fdb4e16adeb393bf4b462231f}{uart1\+\_\+rx\+\_\+buffer}} \mbox{[}\mbox{\hyperlink{main_8c_a1af831dd6bf2216d6fbf4142ab8c8b00}{UART1\+\_\+\+BUF\+\_\+\+SIZE}}\mbox{]}
+\begin{DoxyCompactList}\small\item\em Temporary buffer for incoming ASCII remote packets (USART1/2). \end{DoxyCompactList}\item 
+uint16\+\_\+t \mbox{\hyperlink{main_8c_ac2ac8944572822b4d2d46c852857fdaf}{uart1\+\_\+index}} =0
+\begin{DoxyCompactList}\small\item\em Index into uart1\+\_\+rx\+\_\+buffer for next write position. \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_a21d3398f46b58d5cbefbdc2a306ae086}{is\+\_\+broadcast}} = 0
+\begin{DoxyCompactList}\small\item\em Flag indicating whether telemetry broadcast streaming is enabled. \end{DoxyCompactList}\item 
+FDCAN\+\_\+\+Rx\+Header\+Type\+Def \mbox{\hyperlink{main_8c_a6f98a747185e331f5cda0e09276643da}{rx\+Header}}
+\begin{DoxyCompactList}\small\item\em FDCAN Rx header used for received messages (global scratch). \end{DoxyCompactList}\item 
+uint16\+\_\+t \mbox{\hyperlink{main_8c_abfe0a7cfc3082f4628d82d38aff0549a}{remote\+\_\+cmd}} \mbox{[}3\mbox{]}
+\begin{DoxyCompactList}\small\item\em Parsed remote control channels (3 channels). \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_aa664395f931e17d6c609fffcf581ac6c}{remote\+\_\+bin}}
+\begin{DoxyCompactList}\small\item\em Parsed remote binary flags nibble. \end{DoxyCompactList}\item 
+uint16\+\_\+t \mbox{\hyperlink{main_8c_a7f0d5f470ec5db5604f2463ab8967c54}{uart\+\_\+cmd}} \mbox{[}3\mbox{]}
+\begin{DoxyCompactList}\small\item\em Parsed UART command channels stored as integers. \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{struct_control_c_m_d}{Control\+CMD}} \mbox{\hyperlink{main_8c_a43f3f1c7cac014645bb8cd8e87444867}{control\+\_\+cmd}}
+\begin{DoxyCompactList}\small\item\em Global instance of \doxylink{struct_control_c_m_d}{Control\+CMD} used by tasks to read/update control signals. \end{DoxyCompactList}\item 
+uint32\+\_\+t \mbox{\hyperlink{main_8c_a1d2825443bceaae0de5f7d008da16ee5}{rx\+\_\+mailbox}} = 0
+\begin{DoxyCompactList}\small\item\em Mailbox index for CAN Tx mailbox (unused/placeholder). \end{DoxyCompactList}\item 
+volatile uint32\+\_\+t \mbox{\hyperlink{main_8c_a629f2b4148e5061aa3f0ade906a96aa2}{uart\+\_\+last\+\_\+remote\+\_\+time}} = 0
+\begin{DoxyCompactList}\small\item\em Last tick time when a remote UART byte was received. \end{DoxyCompactList}\item 
+volatile uint32\+\_\+t \mbox{\hyperlink{main_8c_a8c25687f90be12f32ccc04a44c66031a}{ez\+\_\+last\+\_\+can\+\_\+time}} = 0
+\begin{DoxyCompactList}\small\item\em Last tick time when ezkontrol CAN message was seen. \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_ac3dac34bca19ece028fd64b6269384a8}{is\+\_\+remote\+\_\+ready}} =0
+\begin{DoxyCompactList}\small\item\em Flag indicating remote control readiness. \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_ab9e23fe38b3351d4137866c9b2246947}{rx\+Data\+\_\+ezkontrol}} \mbox{[}8\mbox{]}
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_a23f010454795401379de27a1a14a9c89}{rx\+Data\+\_\+brake}} \mbox{[}8\mbox{]}
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_ab146d0e70fbdcb773edcfb7f2aea0525}{rx\+Data\+\_\+steering}} \mbox{[}8\mbox{]}
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_a4ad504b80b97480c39744bd72ff58d4d}{rx\+Data\+\_\+ultrasonic\+\_\+front}} \mbox{[}8\mbox{]}
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_acf0dc07f45f3bb7b623a3ccdd7175c4a}{rx\+Data\+\_\+ultrasonic\+\_\+rear}} \mbox{[}8\mbox{]}
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_a08d11a0b5e1ff5eae24d4457ed7a55a0}{rx\+Data\+\_\+analog\+\_\+throttle}} \mbox{[}8\mbox{]}
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_a1852432a00dbdffebfce60cfc0e15b04}{flag\+\_\+ezkontrol}} = 0
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_aee03c641192bcbf8c4343055abdc6134}{flag\+\_\+brake}} = 0
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_ae264f4e1c1ab4f68e9ccfc2360051741}{flag\+\_\+steering}} = 0
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_a87bdd7546d11ab3913e4e139a0f016ff}{flag\+\_\+ultrasonic\+\_\+front}} = 0
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_ae7c11480e6f71a04de2ec9e6c736beb5}{flag\+\_\+ultrasonic\+\_\+rear}} = 0
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_adc7c2494976091727074f7dad22955df}{flag\+\_\+emergency}} = 0
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_ab60d8119c8215c585798ff622d93dc37}{flag\+\_\+key}} = 0
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_a3b1e2c8e070f6a14a623d30e1c99924d}{flag\+\_\+remote}} = 0
+\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_a5892783317bc194fca4051a62487b744}{flag\+\_\+analog\+\_\+throttle}} = 0
+\item 
+uint32\+\_\+t \mbox{\hyperlink{main_8c_a7411d915798931b0f51eecea2626ec1e}{total\+\_\+rotation}} = 0
+\begin{DoxyCompactList}\small\item\em Cumulative wheel rotation counter (units from integration of rpm). \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{main_8c_a1fc5a0e5fca1a310e6bfa125bf80042e}{rotation}} = 0
+\begin{DoxyCompactList}\small\item\em Floating point rotation accumulator. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{main_8c_a0beda147e08a3d2d84e0bf7da8139d70}{prev\+\_\+rpm}} = 0
+\begin{DoxyCompactList}\small\item\em Previous RPM value for trapezoidal integration. \end{DoxyCompactList}\item 
+uint32\+\_\+t \mbox{\hyperlink{main_8c_a9284c2eec3539d6a1f081518cb849a6a}{rpm\+\_\+sampling}} = 0
+\begin{DoxyCompactList}\small\item\em Timestamp used when sampling RPM from ezkontrol module. \end{DoxyCompactList}\item 
+uint32\+\_\+t \mbox{\hyperlink{main_8c_a575b5f45690c9aad717f83da4a8def42}{last\+\_\+ezkontrol\+\_\+rpm}} = 0
+\begin{DoxyCompactList}\small\item\em Last instant when an ezkontrol RPM was observed. \end{DoxyCompactList}\item 
+uint16\+\_\+t \mbox{\hyperlink{main_8c_a92332403886bc2690bbc53ced83f48d3}{closest\+\_\+radar}}
+\begin{DoxyCompactList}\small\item\em Closest radar distance (cached). \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{main_8c_aed45d6c9aa044b0814c4675ae96f4159}{ready\+\_\+to\+\_\+recieve\+\_\+radar}} = 0
+\begin{DoxyCompactList}\small\item\em Flag indicating radar ready-\/to-\/receive sequence (unused in current logic). \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Main program body for STM32-\/based vehicle control system. 
+
+This file contains the entry point and the primary control logic for an STM32-\/based embedded system that interfaces with CAN (FDCAN), UART, and an RTOS (CMSIS-\/\+RTOS2). It implements tasks for sending telemetry over UART, controlling motors (EZKontrol), sampling CAN messages, steering, braking, and a safety monitoring system. The file preserves the original STM32\+Cube\+MX initialization functions and HAL usage.
+
+The original license/attention block from STM32\+Cube is preserved below.
+
+\begin{DoxyVersion}{Version}
+1.\+0.\+0 
+\end{DoxyVersion}
+\begin{DoxyAuthor}{Author}
+Shiddieqy 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2025-\/11-\/10
+\end{DoxyDate}
+\begin{DoxyAttention}{Attention}
+Copyright (c) 2025 STMicroelectronics. All rights reserved.
+\end{DoxyAttention}
+This software is licensed under terms that can be found in the LICENSE file in the root directory of this software component. If no LICENSE file comes with this software, it is provided AS-\/\+IS. 
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{main_8c_a4bef1684c11775456cc06fd60b23c1f2}\index{main.c@{main.c}!THROTTLE\_FILTER@{THROTTLE\_FILTER}}
+\index{THROTTLE\_FILTER@{THROTTLE\_FILTER}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{THROTTLE\_FILTER}{THROTTLE\_FILTER}}
+{\footnotesize\ttfamily \label{main_8c_a4bef1684c11775456cc06fd60b23c1f2} 
+\#define THROTTLE\+\_\+\+FILTER~0.\+1}
+
+
+
+Smoothing factor for throttle input (0..1). 
+
+Used to low-\/pass filter sudden changes in throttle commands. \Hypertarget{main_8c_a1af831dd6bf2216d6fbf4142ab8c8b00}\index{main.c@{main.c}!UART1\_BUF\_SIZE@{UART1\_BUF\_SIZE}}
+\index{UART1\_BUF\_SIZE@{UART1\_BUF\_SIZE}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{UART1\_BUF\_SIZE}{UART1\_BUF\_SIZE}}
+{\footnotesize\ttfamily \label{main_8c_a1af831dd6bf2216d6fbf4142ab8c8b00} 
+\#define UART1\+\_\+\+BUF\+\_\+\+SIZE~5}
+
+\Hypertarget{main_8c_ab0249d81dd53336b7810ebcf29511210}\index{main.c@{main.c}!UART\_BUF\_SIZE@{UART\_BUF\_SIZE}}
+\index{UART\_BUF\_SIZE@{UART\_BUF\_SIZE}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{UART\_BUF\_SIZE}{UART\_BUF\_SIZE}}
+{\footnotesize\ttfamily \label{main_8c_ab0249d81dd53336b7810ebcf29511210} 
+\#define UART\+\_\+\+BUF\+\_\+\+SIZE~32}
+
+\Hypertarget{main_8c_acfa1763cec78e3b59838f5b51a31b657}\index{main.c@{main.c}!ULTRASONIC\_BOT\_THRESHOLD@{ULTRASONIC\_BOT\_THRESHOLD}}
+\index{ULTRASONIC\_BOT\_THRESHOLD@{ULTRASONIC\_BOT\_THRESHOLD}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{ULTRASONIC\_BOT\_THRESHOLD}{ULTRASONIC\_BOT\_THRESHOLD}}
+{\footnotesize\ttfamily \label{main_8c_acfa1763cec78e3b59838f5b51a31b657} 
+\#define ULTRASONIC\+\_\+\+BOT\+\_\+\+THRESHOLD~70}
+
+
+
+Lower bound threshold for ultrasonic sensors mapping to brake action. 
+
+Values below this will be clamped to maximum braking. \Hypertarget{main_8c_a0806cd14a1c22ddde1d346a8271c2e25}\index{main.c@{main.c}!ULTRASONIC\_THRESHOLD@{ULTRASONIC\_THRESHOLD}}
+\index{ULTRASONIC\_THRESHOLD@{ULTRASONIC\_THRESHOLD}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{ULTRASONIC\_THRESHOLD}{ULTRASONIC\_THRESHOLD}}
+{\footnotesize\ttfamily \label{main_8c_a0806cd14a1c22ddde1d346a8271c2e25} 
+\#define ULTRASONIC\+\_\+\+THRESHOLD~0}
+
+
+
+Threshold (in raw units) under which ultrasonic sensors trigger proximity actions. 
+
+Compared against UART telemetry fields for front and rear ultrasonic measurements. 
+
+\doxysubsection{Function Documentation}
+\Hypertarget{main_8c_aa025a12d45f60c7d0eae249e61f0c7f9}\index{main.c@{main.c}!\_write@{\_write}}
+\index{\_write@{\_write}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{\_write()}{\_write()}}
+{\footnotesize\ttfamily \label{main_8c_aa025a12d45f60c7d0eae249e61f0c7f9} 
+int \+\_\+write (\begin{DoxyParamCaption}\item[{int}]{file}{, }\item[{char \texorpdfstring{$\ast$}{*}}]{ptr}{, }\item[{int}]{len}{}\end{DoxyParamCaption})}
+
+
+
+Reimplements write syscall used by printf to route through UART8. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em file} & File descriptor (ignored). \\
+\hline
+{\em ptr} & Pointer to buffer to write. \\
+\hline
+{\em len} & Number of bytes to write. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Number of bytes written.
+\end{DoxyReturn}
+This function forwards the buffer to HAL\+\_\+\+UART\+\_\+\+Transmit using huart8. It intentionally uses blocking HAL with HAL\+\_\+\+MAX\+\_\+\+DELAY for simplicity.
+
+
+\begin{DoxyParams}{Parameters}
+{\em file} & File descriptor (ignored). \\
+\hline
+{\em ptr} & Pointer to buffer to write. \\
+\hline
+{\em len} & Number of bytes to write. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Number of bytes written. 
+\end{DoxyReturn}
+\Hypertarget{main_8c_a15fe3ce8250964de6f0317ff2653632c}\index{main.c@{main.c}!Brake@{Brake}}
+\index{Brake@{Brake}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{Brake()}{Brake()}}
+{\footnotesize\ttfamily \label{main_8c_a15fe3ce8250964de6f0317ff2653632c} 
+void Brake (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{argument}{}\end{DoxyParamCaption})}
+
+
+
+Function implementing the my\+Task05 thread (Brake). 
+
+Function implementing the my\+Task05 thread.
+
+
+\begin{DoxyParams}{Parameters}
+{\em argument} & Not used \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\Hypertarget{main_8c_a70f73d74fe913c03e6f604659b1767b9}\index{main.c@{main.c}!canbus\_sampling@{canbus\_sampling}}
+\index{canbus\_sampling@{canbus\_sampling}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{canbus\_sampling()}{canbus\_sampling()}}
+{\footnotesize\ttfamily \label{main_8c_a70f73d74fe913c03e6f604659b1767b9} 
+void canbus\+\_\+sampling (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{argument}{}\end{DoxyParamCaption})}
+
+
+
+Function implementing the my\+Task03 thread (canbus\+\_\+sampling). 
+
+Function implementing the my\+Task03 thread.
+
+
+\begin{DoxyParams}{Parameters}
+{\em argument} & Not used \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\Hypertarget{main_8c_a4466af40477fad9abd9287dc003013fc}\index{main.c@{main.c}!ceksum@{ceksum}}
+\index{ceksum@{ceksum}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{ceksum()}{ceksum()}}
+{\footnotesize\ttfamily \label{main_8c_a4466af40477fad9abd9287dc003013fc} 
+uint8\+\_\+t ceksum (\begin{DoxyParamCaption}\item[{uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{msg}{, }\item[{uint16\+\_\+t}]{array\+\_\+size}{}\end{DoxyParamCaption})}
+
+
+
+Compute checksum of a message buffer. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to message buffer. \\
+\hline
+{\em array\+\_\+size} & Size of the buffer (including checksum byte). \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+8-\/bit sum of bytes msg\mbox{[}0\mbox{]}..msg\mbox{[}array\+\_\+size-\/2\mbox{]}.
+\end{DoxyReturn}
+Sums all bytes in the buffer except last and returns 8-\/bit sum.
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to message buffer. \\
+\hline
+{\em array\+\_\+size} & Size of the buffer (including checksum byte). \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+8-\/bit sum of bytes msg\mbox{[}0\mbox{]}..msg\mbox{[}array\+\_\+size-\/2\mbox{]}. 
+\end{DoxyReturn}
+\Hypertarget{main_8c_a1730ffe1e560465665eb47d9264826f9}\index{main.c@{main.c}!Error\_Handler@{Error\_Handler}}
+\index{Error\_Handler@{Error\_Handler}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{Error\_Handler()}{Error\_Handler()}}
+{\footnotesize\ttfamily \label{main_8c_a1730ffe1e560465665eb47d9264826f9} 
+void Error\+\_\+\+Handler (\begin{DoxyParamCaption}\item[{void}]{}{}\end{DoxyParamCaption})}
+
+
+
+This function is executed in case of error occurrence. 
+
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\Hypertarget{main_8c_ab999438b5580f4a0566c39283b5e6080}\index{main.c@{main.c}!ezkontrol@{ezkontrol}}
+\index{ezkontrol@{ezkontrol}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{ezkontrol()}{ezkontrol()}}
+{\footnotesize\ttfamily \label{main_8c_ab999438b5580f4a0566c39283b5e6080} 
+void ezkontrol (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{argument}{}\end{DoxyParamCaption})}
+
+
+
+Function implementing the my\+Task02 thread (ezkontrol). 
+
+Function implementing the my\+Task02 thread.
+
+
+\begin{DoxyParams}{Parameters}
+{\em argument} & Not used \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\Hypertarget{main_8c_a8a3b0ad512a6e6c6157440b68d395eac}\index{main.c@{main.c}!HAL\_TIM\_PeriodElapsedCallback@{HAL\_TIM\_PeriodElapsedCallback}}
+\index{HAL\_TIM\_PeriodElapsedCallback@{HAL\_TIM\_PeriodElapsedCallback}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{HAL\_TIM\_PeriodElapsedCallback()}{HAL\_TIM\_PeriodElapsedCallback()}}
+{\footnotesize\ttfamily \label{main_8c_a8a3b0ad512a6e6c6157440b68d395eac} 
+void HAL\+\_\+\+TIM\+\_\+\+Period\+Elapsed\+Callback (\begin{DoxyParamCaption}\item[{TIM\+\_\+\+Handle\+Type\+Def \texorpdfstring{$\ast$}{*}}]{htim}{}\end{DoxyParamCaption})}
+
+
+
+Period elapsed callback in non blocking mode. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em htim} & \+: TIM handle \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\begin{DoxyNote}{Note}
+This function is called when TIM4 interrupt took place, inside HAL\+\_\+\+TIM\+\_\+\+IRQHandler(). It makes a direct call to HAL\+\_\+\+Inc\+Tick() to increment a global variable "{}uw\+Tick"{} used as application time base. 
+\end{DoxyNote}
+
+\begin{DoxyParams}{Parameters}
+{\em htim} & \+: TIM handle \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\Hypertarget{main_8c_ae494a9643f29b87d6d81e5264e60e57b}\index{main.c@{main.c}!HAL\_UART\_RxCpltCallback@{HAL\_UART\_RxCpltCallback}}
+\index{HAL\_UART\_RxCpltCallback@{HAL\_UART\_RxCpltCallback}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{HAL\_UART\_RxCpltCallback()}{HAL\_UART\_RxCpltCallback()}}
+{\footnotesize\ttfamily \label{main_8c_ae494a9643f29b87d6d81e5264e60e57b} 
+void HAL\+\_\+\+UART\+\_\+\+Rx\+Cplt\+Callback (\begin{DoxyParamCaption}\item[{UART\+\_\+\+Handle\+Type\+Def \texorpdfstring{$\ast$}{*}}]{huart}{}\end{DoxyParamCaption})}
+
+
+
+UART receive complete callback used by HAL interrupt mode. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em huart} & Pointer to UART handle that triggered the callback. \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+Handles per-\/byte reception from UART8 (telemetry control) and USART1/2 (remote control). Re-\/arms the receive interrupt for continuous asynchronous operation.
+
+
+\begin{DoxyParams}{Parameters}
+{\em huart} & Pointer to UART handle that triggered the callback. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{main_8c_a840291bc02cba5474a4cb46a9b9566fe}\index{main.c@{main.c}!main@{main}}
+\index{main@{main}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily \label{main_8c_a840291bc02cba5474a4cb46a9b9566fe} 
+int main (\begin{DoxyParamCaption}\item[{void}]{}{}\end{DoxyParamCaption})}
+
+
+
+The application entry point. 
+
+\DoxyHorRuler{0}
+ Function Definitions (documented prototypes) -\/ appear here in the same order \hypertarget{main_8c_autotoc_md1}{}\doxysubsection{\texorpdfstring{as the implementations later in the file.}{as the implementations later in the file.}}\label{main_8c_autotoc_md1}
+
+\begin{DoxyRetVals}{Return values}
+{\em int} & \\
+\hline
+{\em int} & \\
+\hline
+\end{DoxyRetVals}
+\Hypertarget{main_8c_af0798246d50bcef987b5bc4b74e6a364}\index{main.c@{main.c}!parse\_command@{parse\_command}}
+\index{parse\_command@{parse\_command}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{parse\_command()}{parse\_command()}}
+{\footnotesize\ttfamily \label{main_8c_af0798246d50bcef987b5bc4b74e6a364} 
+void parse\+\_\+command (\begin{DoxyParamCaption}\item[{uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{msg}{}\end{DoxyParamCaption})}
+
+
+
+Parse incoming UART commands and dispatch appropriate actions. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to incoming command buffer.\\
+\hline
+\end{DoxyParams}
+Supports functions codes\+:
+\begin{DoxyItemize}
+\item 0x01\+: Start streaming
+\item 0x00\+: Stop streaming (sends ack)
+\item 0x02\+: Query request
+\item 0x03..0x06\+: Various command/response flows (control and query)
+\end{DoxyItemize}
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to incoming command buffer. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{main_8c_a336c5acb34a801b2984e602b97ed7b73}\index{main.c@{main.c}!PeriphCommonClock\_Config@{PeriphCommonClock\_Config}}
+\index{PeriphCommonClock\_Config@{PeriphCommonClock\_Config}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{PeriphCommonClock\_Config()}{PeriphCommonClock\_Config()}}
+{\footnotesize\ttfamily \label{main_8c_a336c5acb34a801b2984e602b97ed7b73} 
+void Periph\+Common\+Clock\+\_\+\+Config (\begin{DoxyParamCaption}\item[{void}]{}{}\end{DoxyParamCaption})}
+
+
+
+Peripherals Common Clock Configuration. 
+
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+Initializes the peripherals clock\Hypertarget{main_8c_a738f33194888982179443105306e5f96}\index{main.c@{main.c}!query\_request\_data@{query\_request\_data}}
+\index{query\_request\_data@{query\_request\_data}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{query\_request\_data()}{query\_request\_data()}}
+{\footnotesize\ttfamily \label{main_8c_a738f33194888982179443105306e5f96} 
+void query\+\_\+request\+\_\+data (\begin{DoxyParamCaption}\item[{uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{msg}{}\end{DoxyParamCaption})}
+
+
+
+Handle query request messages received over UART. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to incoming 5-\/byte or variable-\/length query message.\\
+\hline
+\end{DoxyParams}
+Verifies checksum and responds by sending a subset of the telemetry packet back over UART8 according to the requested indices.
+
+
+\begin{DoxyParams}{Parameters}
+{\em msg} & Pointer to incoming 5-\/byte or variable-\/length query message. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{main_8c_a8203aa70a52565297789b53a0d937791}\index{main.c@{main.c}!safety\_system@{safety\_system}}
+\index{safety\_system@{safety\_system}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{safety\_system()}{safety\_system()}}
+{\footnotesize\ttfamily \label{main_8c_a8203aa70a52565297789b53a0d937791} 
+void safety\+\_\+system (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{argument}{}\end{DoxyParamCaption})}
+
+
+
+Function implementing the my\+Task06 thread (safety\+\_\+system). 
+
+Function implementing the my\+Task06 thread.
+
+
+\begin{DoxyParams}{Parameters}
+{\em argument} & Not used \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\Hypertarget{main_8c_a5f68b90d4a72b12ea2eeb7a2890f244f}\index{main.c@{main.c}!send\_uart@{send\_uart}}
+\index{send\_uart@{send\_uart}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{send\_uart()}{send\_uart()}}
+{\footnotesize\ttfamily \label{main_8c_a5f68b90d4a72b12ea2eeb7a2890f244f} 
+void send\+\_\+uart (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{argument}{}\end{DoxyParamCaption})}
+
+
+
+Function implementing the default\+Task thread (send\+\_\+uart). 
+
+Function implementing the default\+Task thread.
+
+
+\begin{DoxyParams}{Parameters}
+{\em argument} & Not used \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\Hypertarget{main_8c_ad1974d32f9add5c8ff68593b48c98be0}\index{main.c@{main.c}!Steering@{Steering}}
+\index{Steering@{Steering}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{Steering()}{Steering()}}
+{\footnotesize\ttfamily \label{main_8c_ad1974d32f9add5c8ff68593b48c98be0} 
+void Steering (\begin{DoxyParamCaption}\item[{void \texorpdfstring{$\ast$}{*}}]{argument}{}\end{DoxyParamCaption})}
+
+
+
+Function implementing the my\+Task04 thread (Steering). 
+
+Function implementing the my\+Task04 thread.
+
+
+\begin{DoxyParams}{Parameters}
+{\em argument} & Not used \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\Hypertarget{main_8c_a70af21c671abfcc773614a9a4f63d920}\index{main.c@{main.c}!SystemClock\_Config@{SystemClock\_Config}}
+\index{SystemClock\_Config@{SystemClock\_Config}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{SystemClock\_Config()}{SystemClock\_Config()}}
+{\footnotesize\ttfamily \label{main_8c_a70af21c671abfcc773614a9a4f63d920} 
+void System\+Clock\+\_\+\+Config (\begin{DoxyParamCaption}\item[{void}]{}{}\end{DoxyParamCaption})}
+
+
+
+System Clock Configuration. 
+
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+Supply configuration update enable
+
+Configure the main internal regulator output voltage
+
+Initializes the RCC Oscillators according to the specified parameters in the RCC\+\_\+\+Osc\+Init\+Type\+Def structure.
+
+Initializes the CPU, AHB and APB buses clocks
+
+Enables the Clock Security System
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{main_8c_a92332403886bc2690bbc53ced83f48d3}\index{main.c@{main.c}!closest\_radar@{closest\_radar}}
+\index{closest\_radar@{closest\_radar}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{closest\_radar}{closest\_radar}}
+{\footnotesize\ttfamily \label{main_8c_a92332403886bc2690bbc53ced83f48d3} 
+uint16\+\_\+t closest\+\_\+radar}
+
+
+
+Closest radar distance (cached). 
+
+\Hypertarget{main_8c_a43f3f1c7cac014645bb8cd8e87444867}\index{main.c@{main.c}!control\_cmd@{control\_cmd}}
+\index{control\_cmd@{control\_cmd}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{control\_cmd}{control\_cmd}}
+{\footnotesize\ttfamily \label{main_8c_a43f3f1c7cac014645bb8cd8e87444867} 
+struct \mbox{\hyperlink{struct_control_c_m_d}{Control\+CMD}} control\+\_\+cmd}
+
+
+
+Global instance of \doxylink{struct_control_c_m_d}{Control\+CMD} used by tasks to read/update control signals. 
+
+\Hypertarget{main_8c_a25fbb54afdba71c24ba51ed50166ac8d}\index{main.c@{main.c}!defaultTask\_attributes@{defaultTask\_attributes}}
+\index{defaultTask\_attributes@{defaultTask\_attributes}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{defaultTask\_attributes}{defaultTask\_attributes}}
+{\footnotesize\ttfamily \label{main_8c_a25fbb54afdba71c24ba51ed50166ac8d} 
+const os\+Thread\+Attr\+\_\+t default\+Task\+\_\+attributes}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{=\ \{}
+\DoxyCodeLine{\ \ .name\ =\ \textcolor{stringliteral}{"{}defaultTask"{}},}
+\DoxyCodeLine{\ \ .stack\_size\ =\ 256\ *\ 4,}
+\DoxyCodeLine{\ \ .priority\ =\ (osPriority\_t)\ osPriorityNormal,}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\Hypertarget{main_8c_a6a263905468b0c37de4ee5e50ede4e74}\index{main.c@{main.c}!defaultTaskHandle@{defaultTaskHandle}}
+\index{defaultTaskHandle@{defaultTaskHandle}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{defaultTaskHandle}{defaultTaskHandle}}
+{\footnotesize\ttfamily \label{main_8c_a6a263905468b0c37de4ee5e50ede4e74} 
+os\+Thread\+Id\+\_\+t default\+Task\+Handle}
+
+\Hypertarget{main_8c_a8c25687f90be12f32ccc04a44c66031a}\index{main.c@{main.c}!ez\_last\_can\_time@{ez\_last\_can\_time}}
+\index{ez\_last\_can\_time@{ez\_last\_can\_time}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{ez\_last\_can\_time}{ez\_last\_can\_time}}
+{\footnotesize\ttfamily \label{main_8c_a8c25687f90be12f32ccc04a44c66031a} 
+volatile uint32\+\_\+t ez\+\_\+last\+\_\+can\+\_\+time = 0}
+
+
+
+Last tick time when ezkontrol CAN message was seen. 
+
+\Hypertarget{main_8c_a5892783317bc194fca4051a62487b744}\index{main.c@{main.c}!flag\_analog\_throttle@{flag\_analog\_throttle}}
+\index{flag\_analog\_throttle@{flag\_analog\_throttle}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{flag\_analog\_throttle}{flag\_analog\_throttle}}
+{\footnotesize\ttfamily \label{main_8c_a5892783317bc194fca4051a62487b744} 
+uint8\+\_\+t flag\+\_\+analog\+\_\+throttle = 0}
+
+\Hypertarget{main_8c_aee03c641192bcbf8c4343055abdc6134}\index{main.c@{main.c}!flag\_brake@{flag\_brake}}
+\index{flag\_brake@{flag\_brake}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{flag\_brake}{flag\_brake}}
+{\footnotesize\ttfamily \label{main_8c_aee03c641192bcbf8c4343055abdc6134} 
+uint8\+\_\+t flag\+\_\+brake = 0}
+
+\Hypertarget{main_8c_adc7c2494976091727074f7dad22955df}\index{main.c@{main.c}!flag\_emergency@{flag\_emergency}}
+\index{flag\_emergency@{flag\_emergency}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{flag\_emergency}{flag\_emergency}}
+{\footnotesize\ttfamily \label{main_8c_adc7c2494976091727074f7dad22955df} 
+uint8\+\_\+t flag\+\_\+emergency = 0}
+
+\Hypertarget{main_8c_a1852432a00dbdffebfce60cfc0e15b04}\index{main.c@{main.c}!flag\_ezkontrol@{flag\_ezkontrol}}
+\index{flag\_ezkontrol@{flag\_ezkontrol}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{flag\_ezkontrol}{flag\_ezkontrol}}
+{\footnotesize\ttfamily \label{main_8c_a1852432a00dbdffebfce60cfc0e15b04} 
+uint8\+\_\+t flag\+\_\+ezkontrol = 0}
+
+\Hypertarget{main_8c_ab60d8119c8215c585798ff622d93dc37}\index{main.c@{main.c}!flag\_key@{flag\_key}}
+\index{flag\_key@{flag\_key}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{flag\_key}{flag\_key}}
+{\footnotesize\ttfamily \label{main_8c_ab60d8119c8215c585798ff622d93dc37} 
+uint8\+\_\+t flag\+\_\+key = 0}
+
+\Hypertarget{main_8c_a3b1e2c8e070f6a14a623d30e1c99924d}\index{main.c@{main.c}!flag\_remote@{flag\_remote}}
+\index{flag\_remote@{flag\_remote}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{flag\_remote}{flag\_remote}}
+{\footnotesize\ttfamily \label{main_8c_a3b1e2c8e070f6a14a623d30e1c99924d} 
+uint8\+\_\+t flag\+\_\+remote = 0}
+
+\Hypertarget{main_8c_ae264f4e1c1ab4f68e9ccfc2360051741}\index{main.c@{main.c}!flag\_steering@{flag\_steering}}
+\index{flag\_steering@{flag\_steering}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{flag\_steering}{flag\_steering}}
+{\footnotesize\ttfamily \label{main_8c_ae264f4e1c1ab4f68e9ccfc2360051741} 
+uint8\+\_\+t flag\+\_\+steering = 0}
+
+\Hypertarget{main_8c_a87bdd7546d11ab3913e4e139a0f016ff}\index{main.c@{main.c}!flag\_ultrasonic\_front@{flag\_ultrasonic\_front}}
+\index{flag\_ultrasonic\_front@{flag\_ultrasonic\_front}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{flag\_ultrasonic\_front}{flag\_ultrasonic\_front}}
+{\footnotesize\ttfamily \label{main_8c_a87bdd7546d11ab3913e4e139a0f016ff} 
+uint8\+\_\+t flag\+\_\+ultrasonic\+\_\+front = 0}
+
+\Hypertarget{main_8c_ae7c11480e6f71a04de2ec9e6c736beb5}\index{main.c@{main.c}!flag\_ultrasonic\_rear@{flag\_ultrasonic\_rear}}
+\index{flag\_ultrasonic\_rear@{flag\_ultrasonic\_rear}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{flag\_ultrasonic\_rear}{flag\_ultrasonic\_rear}}
+{\footnotesize\ttfamily \label{main_8c_ae7c11480e6f71a04de2ec9e6c736beb5} 
+uint8\+\_\+t flag\+\_\+ultrasonic\+\_\+rear = 0}
+
+\Hypertarget{main_8c_af71d0ea733e88dc84fb4506e3bb5d8ce}\index{main.c@{main.c}!hfdcan2@{hfdcan2}}
+\index{hfdcan2@{hfdcan2}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{hfdcan2}{hfdcan2}}
+{\footnotesize\ttfamily \label{main_8c_af71d0ea733e88dc84fb4506e3bb5d8ce} 
+FDCAN\+\_\+\+Handle\+Type\+Def hfdcan2}
+
+
+
+FDCAN handle for FDCAN2 peripheral. 
+
+Used for CAN communication with motor controllers, sensors, etc. \Hypertarget{main_8c_a2cf715bef37f7e8ef385a30974a5f0d5}\index{main.c@{main.c}!huart1@{huart1}}
+\index{huart1@{huart1}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{huart1}{huart1}}
+{\footnotesize\ttfamily \label{main_8c_a2cf715bef37f7e8ef385a30974a5f0d5} 
+UART\+\_\+\+Handle\+Type\+Def huart1}
+
+
+
+UART handle for USART1. 
+
+Used to receive remote control commands / telemetry. \Hypertarget{main_8c_aa9479c261d65eecedd3d9582f7f0f89c}\index{main.c@{main.c}!huart2@{huart2}}
+\index{huart2@{huart2}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{huart2}{huart2}}
+{\footnotesize\ttfamily \label{main_8c_aa9479c261d65eecedd3d9582f7f0f89c} 
+UART\+\_\+\+Handle\+Type\+Def huart2}
+
+
+
+UART handle for USART2. 
+
+Used to receive remote control commands / telemetry. \Hypertarget{main_8c_a5c07cbc82baf01ac2608c07b86332a67}\index{main.c@{main.c}!huart8@{huart8}}
+\index{huart8@{huart8}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{huart8}{huart8}}
+{\footnotesize\ttfamily \label{main_8c_a5c07cbc82baf01ac2608c07b86332a67} 
+UART\+\_\+\+Handle\+Type\+Def huart8}
+
+
+
+UART handle for UART8. 
+
+Used for telemetry and host communication (printf output via \+\_\+write). \Hypertarget{main_8c_a21d3398f46b58d5cbefbdc2a306ae086}\index{main.c@{main.c}!is\_broadcast@{is\_broadcast}}
+\index{is\_broadcast@{is\_broadcast}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{is\_broadcast}{is\_broadcast}}
+{\footnotesize\ttfamily \label{main_8c_a21d3398f46b58d5cbefbdc2a306ae086} 
+uint8\+\_\+t is\+\_\+broadcast = 0}
+
+
+
+Flag indicating whether telemetry broadcast streaming is enabled. 
+
+\Hypertarget{main_8c_ac3dac34bca19ece028fd64b6269384a8}\index{main.c@{main.c}!is\_remote\_ready@{is\_remote\_ready}}
+\index{is\_remote\_ready@{is\_remote\_ready}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{is\_remote\_ready}{is\_remote\_ready}}
+{\footnotesize\ttfamily \label{main_8c_ac3dac34bca19ece028fd64b6269384a8} 
+uint8\+\_\+t is\+\_\+remote\+\_\+ready =0}
+
+
+
+Flag indicating remote control readiness. 
+
+\Hypertarget{main_8c_a575b5f45690c9aad717f83da4a8def42}\index{main.c@{main.c}!last\_ezkontrol\_rpm@{last\_ezkontrol\_rpm}}
+\index{last\_ezkontrol\_rpm@{last\_ezkontrol\_rpm}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{last\_ezkontrol\_rpm}{last\_ezkontrol\_rpm}}
+{\footnotesize\ttfamily \label{main_8c_a575b5f45690c9aad717f83da4a8def42} 
+uint32\+\_\+t last\+\_\+ezkontrol\+\_\+rpm = 0}
+
+
+
+Last instant when an ezkontrol RPM was observed. 
+
+\Hypertarget{main_8c_a6d405d334dca4c57ae3d18c7bc2040d2}\index{main.c@{main.c}!myTask02\_attributes@{myTask02\_attributes}}
+\index{myTask02\_attributes@{myTask02\_attributes}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{myTask02\_attributes}{myTask02\_attributes}}
+{\footnotesize\ttfamily \label{main_8c_a6d405d334dca4c57ae3d18c7bc2040d2} 
+const os\+Thread\+Attr\+\_\+t my\+Task02\+\_\+attributes}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{=\ \{}
+\DoxyCodeLine{\ \ .name\ =\ \textcolor{stringliteral}{"{}myTask02"{}},}
+\DoxyCodeLine{\ \ .stack\_size\ =\ 128\ *\ 4,}
+\DoxyCodeLine{\ \ .priority\ =\ (osPriority\_t)\ osPriorityNormal,}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\Hypertarget{main_8c_a2d2b138012cae0c08ec4af86d33dc579}\index{main.c@{main.c}!myTask02Handle@{myTask02Handle}}
+\index{myTask02Handle@{myTask02Handle}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{myTask02Handle}{myTask02Handle}}
+{\footnotesize\ttfamily \label{main_8c_a2d2b138012cae0c08ec4af86d33dc579} 
+os\+Thread\+Id\+\_\+t my\+Task02\+Handle}
+
+\Hypertarget{main_8c_a1e3a8b648e3d8f5b47ac5eeec9581db0}\index{main.c@{main.c}!myTask03\_attributes@{myTask03\_attributes}}
+\index{myTask03\_attributes@{myTask03\_attributes}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{myTask03\_attributes}{myTask03\_attributes}}
+{\footnotesize\ttfamily \label{main_8c_a1e3a8b648e3d8f5b47ac5eeec9581db0} 
+const os\+Thread\+Attr\+\_\+t my\+Task03\+\_\+attributes}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{=\ \{}
+\DoxyCodeLine{\ \ .name\ =\ \textcolor{stringliteral}{"{}myTask03"{}},}
+\DoxyCodeLine{\ \ .stack\_size\ =\ 128\ *\ 4,}
+\DoxyCodeLine{\ \ .priority\ =\ (osPriority\_t)\ osPriorityNormal,}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\Hypertarget{main_8c_a329f150edda503ebc9ddbbf63cca8e26}\index{main.c@{main.c}!myTask03Handle@{myTask03Handle}}
+\index{myTask03Handle@{myTask03Handle}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{myTask03Handle}{myTask03Handle}}
+{\footnotesize\ttfamily \label{main_8c_a329f150edda503ebc9ddbbf63cca8e26} 
+os\+Thread\+Id\+\_\+t my\+Task03\+Handle}
+
+\Hypertarget{main_8c_a92121c9d4871cbd24a3536f81b0a49b0}\index{main.c@{main.c}!myTask04\_attributes@{myTask04\_attributes}}
+\index{myTask04\_attributes@{myTask04\_attributes}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{myTask04\_attributes}{myTask04\_attributes}}
+{\footnotesize\ttfamily \label{main_8c_a92121c9d4871cbd24a3536f81b0a49b0} 
+const os\+Thread\+Attr\+\_\+t my\+Task04\+\_\+attributes}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{=\ \{}
+\DoxyCodeLine{\ \ .name\ =\ \textcolor{stringliteral}{"{}myTask04"{}},}
+\DoxyCodeLine{\ \ .stack\_size\ =\ 128\ *\ 4,}
+\DoxyCodeLine{\ \ .priority\ =\ (osPriority\_t)\ osPriorityNormal,}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\Hypertarget{main_8c_aef8c302b617a2329f03faf89a3796b2b}\index{main.c@{main.c}!myTask04Handle@{myTask04Handle}}
+\index{myTask04Handle@{myTask04Handle}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{myTask04Handle}{myTask04Handle}}
+{\footnotesize\ttfamily \label{main_8c_aef8c302b617a2329f03faf89a3796b2b} 
+os\+Thread\+Id\+\_\+t my\+Task04\+Handle}
+
+\Hypertarget{main_8c_a489c45e33b8a8fac2875e16e14628f20}\index{main.c@{main.c}!myTask05\_attributes@{myTask05\_attributes}}
+\index{myTask05\_attributes@{myTask05\_attributes}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{myTask05\_attributes}{myTask05\_attributes}}
+{\footnotesize\ttfamily \label{main_8c_a489c45e33b8a8fac2875e16e14628f20} 
+const os\+Thread\+Attr\+\_\+t my\+Task05\+\_\+attributes}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{=\ \{}
+\DoxyCodeLine{\ \ .name\ =\ \textcolor{stringliteral}{"{}myTask05"{}},}
+\DoxyCodeLine{\ \ .stack\_size\ =\ 128\ *\ 4,}
+\DoxyCodeLine{\ \ .priority\ =\ (osPriority\_t)\ osPriorityNormal,}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\Hypertarget{main_8c_a30fa863f442d84c64e5fdaf20aa89673}\index{main.c@{main.c}!myTask05Handle@{myTask05Handle}}
+\index{myTask05Handle@{myTask05Handle}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{myTask05Handle}{myTask05Handle}}
+{\footnotesize\ttfamily \label{main_8c_a30fa863f442d84c64e5fdaf20aa89673} 
+os\+Thread\+Id\+\_\+t my\+Task05\+Handle}
+
+\Hypertarget{main_8c_ad82e06bb4c5badd3595dd84e47bb2e49}\index{main.c@{main.c}!myTask06\_attributes@{myTask06\_attributes}}
+\index{myTask06\_attributes@{myTask06\_attributes}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{myTask06\_attributes}{myTask06\_attributes}}
+{\footnotesize\ttfamily \label{main_8c_ad82e06bb4c5badd3595dd84e47bb2e49} 
+const os\+Thread\+Attr\+\_\+t my\+Task06\+\_\+attributes}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{=\ \{}
+\DoxyCodeLine{\ \ .name\ =\ \textcolor{stringliteral}{"{}myTask06"{}},}
+\DoxyCodeLine{\ \ .stack\_size\ =\ 128\ *\ 4,}
+\DoxyCodeLine{\ \ .priority\ =\ (osPriority\_t)\ osPriorityNormal,}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+\Hypertarget{main_8c_a2964f031caf33bc9320b5ef243f55abd}\index{main.c@{main.c}!myTask06Handle@{myTask06Handle}}
+\index{myTask06Handle@{myTask06Handle}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{myTask06Handle}{myTask06Handle}}
+{\footnotesize\ttfamily \label{main_8c_a2964f031caf33bc9320b5ef243f55abd} 
+os\+Thread\+Id\+\_\+t my\+Task06\+Handle}
+
+\Hypertarget{main_8c_a0beda147e08a3d2d84e0bf7da8139d70}\index{main.c@{main.c}!prev\_rpm@{prev\_rpm}}
+\index{prev\_rpm@{prev\_rpm}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{prev\_rpm}{prev\_rpm}}
+{\footnotesize\ttfamily \label{main_8c_a0beda147e08a3d2d84e0bf7da8139d70} 
+float prev\+\_\+rpm = 0}
+
+
+
+Previous RPM value for trapezoidal integration. 
+
+\Hypertarget{main_8c_aed45d6c9aa044b0814c4675ae96f4159}\index{main.c@{main.c}!ready\_to\_recieve\_radar@{ready\_to\_recieve\_radar}}
+\index{ready\_to\_recieve\_radar@{ready\_to\_recieve\_radar}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{ready\_to\_recieve\_radar}{ready\_to\_recieve\_radar}}
+{\footnotesize\ttfamily \label{main_8c_aed45d6c9aa044b0814c4675ae96f4159} 
+uint8\+\_\+t ready\+\_\+to\+\_\+recieve\+\_\+radar = 0}
+
+
+
+Flag indicating radar ready-\/to-\/receive sequence (unused in current logic). 
+
+\Hypertarget{main_8c_aa664395f931e17d6c609fffcf581ac6c}\index{main.c@{main.c}!remote\_bin@{remote\_bin}}
+\index{remote\_bin@{remote\_bin}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{remote\_bin}{remote\_bin}}
+{\footnotesize\ttfamily \label{main_8c_aa664395f931e17d6c609fffcf581ac6c} 
+uint8\+\_\+t remote\+\_\+bin}
+
+
+
+Parsed remote binary flags nibble. 
+
+\Hypertarget{main_8c_abfe0a7cfc3082f4628d82d38aff0549a}\index{main.c@{main.c}!remote\_cmd@{remote\_cmd}}
+\index{remote\_cmd@{remote\_cmd}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{remote\_cmd}{remote\_cmd}}
+{\footnotesize\ttfamily \label{main_8c_abfe0a7cfc3082f4628d82d38aff0549a} 
+uint16\+\_\+t remote\+\_\+cmd\mbox{[}3\mbox{]}}
+
+
+
+Parsed remote control channels (3 channels). 
+
+\Hypertarget{main_8c_a1fc5a0e5fca1a310e6bfa125bf80042e}\index{main.c@{main.c}!rotation@{rotation}}
+\index{rotation@{rotation}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{rotation}{rotation}}
+{\footnotesize\ttfamily \label{main_8c_a1fc5a0e5fca1a310e6bfa125bf80042e} 
+float rotation = 0}
+
+
+
+Floating point rotation accumulator. 
+
+\Hypertarget{main_8c_a9284c2eec3539d6a1f081518cb849a6a}\index{main.c@{main.c}!rpm\_sampling@{rpm\_sampling}}
+\index{rpm\_sampling@{rpm\_sampling}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{rpm\_sampling}{rpm\_sampling}}
+{\footnotesize\ttfamily \label{main_8c_a9284c2eec3539d6a1f081518cb849a6a} 
+uint32\+\_\+t rpm\+\_\+sampling = 0}
+
+
+
+Timestamp used when sampling RPM from ezkontrol module. 
+
+\Hypertarget{main_8c_a1d2825443bceaae0de5f7d008da16ee5}\index{main.c@{main.c}!rx\_mailbox@{rx\_mailbox}}
+\index{rx\_mailbox@{rx\_mailbox}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{rx\_mailbox}{rx\_mailbox}}
+{\footnotesize\ttfamily \label{main_8c_a1d2825443bceaae0de5f7d008da16ee5} 
+uint32\+\_\+t rx\+\_\+mailbox = 0}
+
+
+
+Mailbox index for CAN Tx mailbox (unused/placeholder). 
+
+\Hypertarget{main_8c_a08d11a0b5e1ff5eae24d4457ed7a55a0}\index{main.c@{main.c}!rxData\_analog\_throttle@{rxData\_analog\_throttle}}
+\index{rxData\_analog\_throttle@{rxData\_analog\_throttle}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{rxData\_analog\_throttle}{rxData\_analog\_throttle}}
+{\footnotesize\ttfamily \label{main_8c_a08d11a0b5e1ff5eae24d4457ed7a55a0} 
+uint8\+\_\+t rx\+Data\+\_\+analog\+\_\+throttle\mbox{[}8\mbox{]}}
+
+\Hypertarget{main_8c_a23f010454795401379de27a1a14a9c89}\index{main.c@{main.c}!rxData\_brake@{rxData\_brake}}
+\index{rxData\_brake@{rxData\_brake}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{rxData\_brake}{rxData\_brake}}
+{\footnotesize\ttfamily \label{main_8c_a23f010454795401379de27a1a14a9c89} 
+uint8\+\_\+t rx\+Data\+\_\+brake\mbox{[}8\mbox{]}}
+
+\Hypertarget{main_8c_ab9e23fe38b3351d4137866c9b2246947}\index{main.c@{main.c}!rxData\_ezkontrol@{rxData\_ezkontrol}}
+\index{rxData\_ezkontrol@{rxData\_ezkontrol}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{rxData\_ezkontrol}{rxData\_ezkontrol}}
+{\footnotesize\ttfamily \label{main_8c_ab9e23fe38b3351d4137866c9b2246947} 
+uint8\+\_\+t rx\+Data\+\_\+ezkontrol\mbox{[}8\mbox{]}}
+
+\Hypertarget{main_8c_ab146d0e70fbdcb773edcfb7f2aea0525}\index{main.c@{main.c}!rxData\_steering@{rxData\_steering}}
+\index{rxData\_steering@{rxData\_steering}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{rxData\_steering}{rxData\_steering}}
+{\footnotesize\ttfamily \label{main_8c_ab146d0e70fbdcb773edcfb7f2aea0525} 
+uint8\+\_\+t rx\+Data\+\_\+steering\mbox{[}8\mbox{]}}
+
+\Hypertarget{main_8c_a4ad504b80b97480c39744bd72ff58d4d}\index{main.c@{main.c}!rxData\_ultrasonic\_front@{rxData\_ultrasonic\_front}}
+\index{rxData\_ultrasonic\_front@{rxData\_ultrasonic\_front}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{rxData\_ultrasonic\_front}{rxData\_ultrasonic\_front}}
+{\footnotesize\ttfamily \label{main_8c_a4ad504b80b97480c39744bd72ff58d4d} 
+uint8\+\_\+t rx\+Data\+\_\+ultrasonic\+\_\+front\mbox{[}8\mbox{]}}
+
+\Hypertarget{main_8c_acf0dc07f45f3bb7b623a3ccdd7175c4a}\index{main.c@{main.c}!rxData\_ultrasonic\_rear@{rxData\_ultrasonic\_rear}}
+\index{rxData\_ultrasonic\_rear@{rxData\_ultrasonic\_rear}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{rxData\_ultrasonic\_rear}{rxData\_ultrasonic\_rear}}
+{\footnotesize\ttfamily \label{main_8c_acf0dc07f45f3bb7b623a3ccdd7175c4a} 
+uint8\+\_\+t rx\+Data\+\_\+ultrasonic\+\_\+rear\mbox{[}8\mbox{]}}
+
+\Hypertarget{main_8c_a6f98a747185e331f5cda0e09276643da}\index{main.c@{main.c}!rxHeader@{rxHeader}}
+\index{rxHeader@{rxHeader}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{rxHeader}{rxHeader}}
+{\footnotesize\ttfamily \label{main_8c_a6f98a747185e331f5cda0e09276643da} 
+FDCAN\+\_\+\+Rx\+Header\+Type\+Def rx\+Header}
+
+
+
+FDCAN Rx header used for received messages (global scratch). 
+
+\Hypertarget{main_8c_a7411d915798931b0f51eecea2626ec1e}\index{main.c@{main.c}!total\_rotation@{total\_rotation}}
+\index{total\_rotation@{total\_rotation}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{total\_rotation}{total\_rotation}}
+{\footnotesize\ttfamily \label{main_8c_a7411d915798931b0f51eecea2626ec1e} 
+uint32\+\_\+t total\+\_\+rotation = 0}
+
+
+
+Cumulative wheel rotation counter (units from integration of rpm). 
+
+\Hypertarget{main_8c_ad5e2a0dec612328a86551a978d91ed10}\index{main.c@{main.c}!uart1\_data@{uart1\_data}}
+\index{uart1\_data@{uart1\_data}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{uart1\_data}{uart1\_data}}
+{\footnotesize\ttfamily \label{main_8c_ad5e2a0dec612328a86551a978d91ed10} 
+uint8\+\_\+t uart1\+\_\+data\mbox{[}100\mbox{]}}
+
+
+
+Local buffer for incoming UART1 data copy. 
+
+\Hypertarget{main_8c_ac2ac8944572822b4d2d46c852857fdaf}\index{main.c@{main.c}!uart1\_index@{uart1\_index}}
+\index{uart1\_index@{uart1\_index}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{uart1\_index}{uart1\_index}}
+{\footnotesize\ttfamily \label{main_8c_ac2ac8944572822b4d2d46c852857fdaf} 
+uint16\+\_\+t uart1\+\_\+index =0}
+
+
+
+Index into uart1\+\_\+rx\+\_\+buffer for next write position. 
+
+\Hypertarget{main_8c_aca62292fdb4e16adeb393bf4b462231f}\index{main.c@{main.c}!uart1\_rx\_buffer@{uart1\_rx\_buffer}}
+\index{uart1\_rx\_buffer@{uart1\_rx\_buffer}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{uart1\_rx\_buffer}{uart1\_rx\_buffer}}
+{\footnotesize\ttfamily \label{main_8c_aca62292fdb4e16adeb393bf4b462231f} 
+char uart1\+\_\+rx\+\_\+buffer\mbox{[}\mbox{\hyperlink{main_8c_a1af831dd6bf2216d6fbf4142ab8c8b00}{UART1\+\_\+\+BUF\+\_\+\+SIZE}}\mbox{]}}
+
+
+
+Temporary buffer for incoming ASCII remote packets (USART1/2). 
+
+\Hypertarget{main_8c_affd5fa72df130fdd9e5590850506729a}\index{main.c@{main.c}!uart\_byte1@{uart\_byte1}}
+\index{uart\_byte1@{uart\_byte1}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{uart\_byte1}{uart\_byte1}}
+{\footnotesize\ttfamily \label{main_8c_affd5fa72df130fdd9e5590850506729a} 
+uint8\+\_\+t uart\+\_\+byte1}
+
+
+
+Single-\/byte temporary storage for UART interrupts (USART1/2). 
+
+\Hypertarget{main_8c_adee47efb11336ab0282dc184bee99467}\index{main.c@{main.c}!uart\_byte8@{uart\_byte8}}
+\index{uart\_byte8@{uart\_byte8}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{uart\_byte8}{uart\_byte8}}
+{\footnotesize\ttfamily \label{main_8c_adee47efb11336ab0282dc184bee99467} 
+uint8\+\_\+t uart\+\_\+byte8}
+
+
+
+Single-\/byte temporary storage for UART interrupts (UART8). 
+
+\Hypertarget{main_8c_a7f0d5f470ec5db5604f2463ab8967c54}\index{main.c@{main.c}!uart\_cmd@{uart\_cmd}}
+\index{uart\_cmd@{uart\_cmd}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{uart\_cmd}{uart\_cmd}}
+{\footnotesize\ttfamily \label{main_8c_a7f0d5f470ec5db5604f2463ab8967c54} 
+uint16\+\_\+t uart\+\_\+cmd\mbox{[}3\mbox{]}}
+
+
+
+Parsed UART command channels stored as integers. 
+
+\Hypertarget{main_8c_a895c4854f46560e483400793c53980e4}\index{main.c@{main.c}!uart\_data@{uart\_data}}
+\index{uart\_data@{uart\_data}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{uart\_data}{uart\_data}}
+{\footnotesize\ttfamily \label{main_8c_a895c4854f46560e483400793c53980e4} 
+uint8\+\_\+t uart\+\_\+data\mbox{[}34\mbox{]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{=\ \{}
+\DoxyCodeLine{\ \ \ \ 0xA5,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x11,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ 0x00,\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ 0x00,\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ 0x00,\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ 0x00,\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ 0x00,\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ 0x00,\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ 0x00,\ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0xFF,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0xFF,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ 0x00,\ 0x00,\ 0x00,\ }
+\DoxyCodeLine{\ \ \ \ 0x00,\ 0x00,\ 0x00,\ 0x00,\ }
+\DoxyCodeLine{\ \ \ \ 0x00\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+Telemetry packet to be streamed over UART. 
+
+The array is a fixed 34-\/byte packet with the following mapping\+:
+\begin{DoxyItemize}
+\item \mbox{[}0\mbox{]} Header (0x\+A5)
+\item \mbox{[}1\mbox{]} Function code (streaming data)
+\item \mbox{[}2\mbox{]} Battery percentage
+\item \mbox{[}3\mbox{]} Charging status
+\item \mbox{[}4-\/5\mbox{]} RPM (int16, divided by 10 in original format)
+\item \mbox{[}6\mbox{]} Brake percentage
+\item \mbox{[}7\mbox{]} Steer angle
+\item \mbox{[}8-\/19\mbox{]} IMU fields (x,y,z,yaw,pitch,roll)
+\item \mbox{[}20\mbox{]} Radar closest object
+\item \mbox{[}21\mbox{]} Ultrasonic front
+\item \mbox{[}22\mbox{]} Ultrasonic rear
+\item \mbox{[}23\mbox{]} Front bumper switch
+\item \mbox{[}24\mbox{]} Rear bumper switch
+\item \mbox{[}25-\/28\mbox{]} GPS latitude (float)
+\item \mbox{[}29-\/32\mbox{]} GPS longitude (float)
+\item \mbox{[}33\mbox{]} Checksum 
+\end{DoxyItemize}\Hypertarget{main_8c_a5537ad53848381767daf0a731f8fd009}\index{main.c@{main.c}!uart\_index@{uart\_index}}
+\index{uart\_index@{uart\_index}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{uart\_index}{uart\_index}}
+{\footnotesize\ttfamily \label{main_8c_a5537ad53848381767daf0a731f8fd009} 
+uint16\+\_\+t uart\+\_\+index = 0}
+
+
+
+Index into uart\+\_\+rx\+\_\+buffer for next write position. 
+
+\Hypertarget{main_8c_a629f2b4148e5061aa3f0ade906a96aa2}\index{main.c@{main.c}!uart\_last\_remote\_time@{uart\_last\_remote\_time}}
+\index{uart\_last\_remote\_time@{uart\_last\_remote\_time}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{uart\_last\_remote\_time}{uart\_last\_remote\_time}}
+{\footnotesize\ttfamily \label{main_8c_a629f2b4148e5061aa3f0ade906a96aa2} 
+volatile uint32\+\_\+t uart\+\_\+last\+\_\+remote\+\_\+time = 0}
+
+
+
+Last tick time when a remote UART byte was received. 
+
+\Hypertarget{main_8c_a64a393a271595a2e2a16270cf7a4e025}\index{main.c@{main.c}!uart\_rx\_buffer@{uart\_rx\_buffer}}
+\index{uart\_rx\_buffer@{uart\_rx\_buffer}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{uart\_rx\_buffer}{uart\_rx\_buffer}}
+{\footnotesize\ttfamily \label{main_8c_a64a393a271595a2e2a16270cf7a4e025} 
+uint8\+\_\+t uart\+\_\+rx\+\_\+buffer\mbox{[}\mbox{\hyperlink{main_8c_ab0249d81dd53336b7810ebcf29511210}{UART\+\_\+\+BUF\+\_\+\+SIZE}}\mbox{]}}
+
+
+
+Circular RX buffer for UART8 asynchronous reception. 
+

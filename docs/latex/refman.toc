@@ -1,0 +1,98 @@
+\@ifundefined {etoctocstyle}{\let \etoc@startlocaltoc \@gobble \let \etoc@settocdepth \@gobble \let \etoc@depthtag \@gobble \let \etoc@setlocaltop \@gobble }{}
+\contentsline {chapter}{\numberline {1}AVA LLC Documentation}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Introduction}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Author}{1}{section.1.2}%
+\contentsline {chapter}{\numberline {2}MAINBOARD Subsystem}{3}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Related Module}{3}{section.2.1}%
+\contentsline {chapter}{\numberline {3}ULTRASONIC Subsystem}{5}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Related Module}{5}{section.3.1}%
+\contentsline {chapter}{\numberline {4}STEERING Subsystem}{7}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Related Module}{7}{section.4.1}%
+\contentsline {chapter}{\numberline {5}BRAKE Subsystem}{9}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Related Module}{9}{section.5.1}%
+\contentsline {chapter}{\numberline {6}Topic Index}{11}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Topics}{11}{section.6.1}%
+\contentsline {chapter}{\numberline {7}Topic Documentation}{13}{chapter.7}%
+\contentsline {section}{\numberline {7.1}MAINBOARD}{13}{section.7.1}%
+\contentsline {subsection}{\numberline {7.1.1}Detailed Description}{16}{subsection.7.1.1}%
+\contentsline {subsection}{\numberline {7.1.2}Macro Definition Documentation}{16}{subsection.7.1.2}%
+\contentsline {subsubsection}{\numberline {7.1.2.1}THROTTLE\_FILTER}{16}{subsubsection.7.1.2.1}%
+\contentsline {subsubsection}{\numberline {7.1.2.2}UART1\_BUF\_SIZE}{16}{subsubsection.7.1.2.2}%
+\contentsline {subsubsection}{\numberline {7.1.2.3}UART\_BUF\_SIZE}{16}{subsubsection.7.1.2.3}%
+\contentsline {subsubsection}{\numberline {7.1.2.4}ULTRASONIC\_BOT\_THRESHOLD}{16}{subsubsection.7.1.2.4}%
+\contentsline {subsubsection}{\numberline {7.1.2.5}ULTRASONIC\_THRESHOLD}{17}{subsubsection.7.1.2.5}%
+\contentsline {subsection}{\numberline {7.1.3}Function Documentation}{17}{subsection.7.1.3}%
+\contentsline {subsubsection}{\numberline {7.1.3.1}\_write()}{17}{subsubsection.7.1.3.1}%
+\contentsline {subsubsection}{\numberline {7.1.3.2}Brake()}{17}{subsubsection.7.1.3.2}%
+\contentsline {subsubsection}{\numberline {7.1.3.3}canbus\_sampling()}{18}{subsubsection.7.1.3.3}%
+\contentsline {subsubsection}{\numberline {7.1.3.4}ceksum()}{18}{subsubsection.7.1.3.4}%
+\contentsline {subsubsection}{\numberline {7.1.3.5}Error\_Handler()}{19}{subsubsection.7.1.3.5}%
+\contentsline {subsubsection}{\numberline {7.1.3.6}ezkontrol()}{19}{subsubsection.7.1.3.6}%
+\contentsline {subsubsection}{\numberline {7.1.3.7}HAL\_TIM\_PeriodElapsedCallback()}{19}{subsubsection.7.1.3.7}%
+\contentsline {subsubsection}{\numberline {7.1.3.8}HAL\_UART\_RxCpltCallback()}{20}{subsubsection.7.1.3.8}%
+\contentsline {subsubsection}{\numberline {7.1.3.9}main()}{20}{subsubsection.7.1.3.9}%
+\contentsline {subsection}{\numberline {7.1.4}as the implementations later in the file.}{20}{subsection.7.1.4}%
+\contentsline {subsubsection}{\numberline {7.1.4.1}parse\_command()}{20}{subsubsection.7.1.4.1}%
+\contentsline {subsubsection}{\numberline {7.1.4.2}PeriphCommonClock\_Config()}{21}{subsubsection.7.1.4.2}%
+\contentsline {subsubsection}{\numberline {7.1.4.3}query\_request\_data()}{21}{subsubsection.7.1.4.3}%
+\contentsline {subsubsection}{\numberline {7.1.4.4}safety\_system()}{21}{subsubsection.7.1.4.4}%
+\contentsline {subsubsection}{\numberline {7.1.4.5}send\_uart()}{22}{subsubsection.7.1.4.5}%
+\contentsline {subsubsection}{\numberline {7.1.4.6}Steering()}{22}{subsubsection.7.1.4.6}%
+\contentsline {subsubsection}{\numberline {7.1.4.7}SystemClock\_Config()}{22}{subsubsection.7.1.4.7}%
+\contentsline {subsection}{\numberline {7.1.5}Variable Documentation}{22}{subsection.7.1.5}%
+\contentsline {subsubsection}{\numberline {7.1.5.1}closest\_radar}{22}{subsubsection.7.1.5.1}%
+\contentsline {subsubsection}{\numberline {7.1.5.2}control\_cmd}{23}{subsubsection.7.1.5.2}%
+\contentsline {subsubsection}{\numberline {7.1.5.3}defaultTask\_attributes}{23}{subsubsection.7.1.5.3}%
+\contentsline {subsubsection}{\numberline {7.1.5.4}defaultTaskHandle}{23}{subsubsection.7.1.5.4}%
+\contentsline {subsubsection}{\numberline {7.1.5.5}ez\_last\_can\_time}{23}{subsubsection.7.1.5.5}%
+\contentsline {subsubsection}{\numberline {7.1.5.6}flag\_analog\_throttle}{23}{subsubsection.7.1.5.6}%
+\contentsline {subsubsection}{\numberline {7.1.5.7}flag\_brake}{23}{subsubsection.7.1.5.7}%
+\contentsline {subsubsection}{\numberline {7.1.5.8}flag\_emergency}{23}{subsubsection.7.1.5.8}%
+\contentsline {subsubsection}{\numberline {7.1.5.9}flag\_ezkontrol}{23}{subsubsection.7.1.5.9}%
+\contentsline {subsubsection}{\numberline {7.1.5.10}flag\_key}{23}{subsubsection.7.1.5.10}%
+\contentsline {subsubsection}{\numberline {7.1.5.11}flag\_remote}{23}{subsubsection.7.1.5.11}%
+\contentsline {subsubsection}{\numberline {7.1.5.12}flag\_steering}{23}{subsubsection.7.1.5.12}%
+\contentsline {subsubsection}{\numberline {7.1.5.13}flag\_ultrasonic\_front}{23}{subsubsection.7.1.5.13}%
+\contentsline {subsubsection}{\numberline {7.1.5.14}flag\_ultrasonic\_rear}{23}{subsubsection.7.1.5.14}%
+\contentsline {subsubsection}{\numberline {7.1.5.15}hfdcan2}{24}{subsubsection.7.1.5.15}%
+\contentsline {subsubsection}{\numberline {7.1.5.16}huart1}{24}{subsubsection.7.1.5.16}%
+\contentsline {subsubsection}{\numberline {7.1.5.17}huart2}{24}{subsubsection.7.1.5.17}%
+\contentsline {subsubsection}{\numberline {7.1.5.18}huart8}{24}{subsubsection.7.1.5.18}%
+\contentsline {subsubsection}{\numberline {7.1.5.19}is\_broadcast}{24}{subsubsection.7.1.5.19}%
+\contentsline {subsubsection}{\numberline {7.1.5.20}is\_remote\_ready}{24}{subsubsection.7.1.5.20}%
+\contentsline {subsubsection}{\numberline {7.1.5.21}last\_ezkontrol\_rpm}{24}{subsubsection.7.1.5.21}%
+\contentsline {subsubsection}{\numberline {7.1.5.22}myTask02\_attributes}{24}{subsubsection.7.1.5.22}%
+\contentsline {subsubsection}{\numberline {7.1.5.23}myTask02Handle}{24}{subsubsection.7.1.5.23}%
+\contentsline {subsubsection}{\numberline {7.1.5.24}myTask03\_attributes}{24}{subsubsection.7.1.5.24}%
+\contentsline {subsubsection}{\numberline {7.1.5.25}myTask03Handle}{25}{subsubsection.7.1.5.25}%
+\contentsline {subsubsection}{\numberline {7.1.5.26}myTask04\_attributes}{25}{subsubsection.7.1.5.26}%
+\contentsline {subsubsection}{\numberline {7.1.5.27}myTask04Handle}{25}{subsubsection.7.1.5.27}%
+\contentsline {subsubsection}{\numberline {7.1.5.28}myTask05\_attributes}{25}{subsubsection.7.1.5.28}%
+\contentsline {subsubsection}{\numberline {7.1.5.29}myTask05Handle}{25}{subsubsection.7.1.5.29}%
+\contentsline {subsubsection}{\numberline {7.1.5.30}myTask06\_attributes}{25}{subsubsection.7.1.5.30}%
+\contentsline {subsubsection}{\numberline {7.1.5.31}myTask06Handle}{25}{subsubsection.7.1.5.31}%
+\contentsline {subsubsection}{\numberline {7.1.5.32}prev\_rpm}{25}{subsubsection.7.1.5.32}%
+\contentsline {subsubsection}{\numberline {7.1.5.33}ready\_to\_recieve\_radar}{25}{subsubsection.7.1.5.33}%
+\contentsline {subsubsection}{\numberline {7.1.5.34}remote\_bin}{25}{subsubsection.7.1.5.34}%
+\contentsline {subsubsection}{\numberline {7.1.5.35}remote\_cmd}{25}{subsubsection.7.1.5.35}%
+\contentsline {subsubsection}{\numberline {7.1.5.36}rotation}{26}{subsubsection.7.1.5.36}%
+\contentsline {subsubsection}{\numberline {7.1.5.37}rpm\_sampling}{26}{subsubsection.7.1.5.37}%
+\contentsline {subsubsection}{\numberline {7.1.5.38}rx\_mailbox}{26}{subsubsection.7.1.5.38}%
+\contentsline {subsubsection}{\numberline {7.1.5.39}rxData\_analog\_throttle}{26}{subsubsection.7.1.5.39}%
+\contentsline {subsubsection}{\numberline {7.1.5.40}rxData\_brake}{26}{subsubsection.7.1.5.40}%
+\contentsline {subsubsection}{\numberline {7.1.5.41}rxData\_ezkontrol}{26}{subsubsection.7.1.5.41}%
+\contentsline {subsubsection}{\numberline {7.1.5.42}rxData\_steering}{26}{subsubsection.7.1.5.42}%
+\contentsline {subsubsection}{\numberline {7.1.5.43}rxData\_ultrasonic\_front}{26}{subsubsection.7.1.5.43}%
+\contentsline {subsubsection}{\numberline {7.1.5.44}rxData\_ultrasonic\_rear}{26}{subsubsection.7.1.5.44}%
+\contentsline {subsubsection}{\numberline {7.1.5.45}rxHeader}{26}{subsubsection.7.1.5.45}%
+\contentsline {subsubsection}{\numberline {7.1.5.46}total\_rotation}{26}{subsubsection.7.1.5.46}%
+\contentsline {subsubsection}{\numberline {7.1.5.47}uart1\_data}{26}{subsubsection.7.1.5.47}%
+\contentsline {subsubsection}{\numberline {7.1.5.48}uart1\_index}{26}{subsubsection.7.1.5.48}%
+\contentsline {subsubsection}{\numberline {7.1.5.49}uart1\_rx\_buffer}{27}{subsubsection.7.1.5.49}%
+\contentsline {subsubsection}{\numberline {7.1.5.50}uart\_byte1}{27}{subsubsection.7.1.5.50}%
+\contentsline {subsubsection}{\numberline {7.1.5.51}uart\_byte8}{27}{subsubsection.7.1.5.51}%
+\contentsline {subsubsection}{\numberline {7.1.5.52}uart\_cmd}{27}{subsubsection.7.1.5.52}%
+\contentsline {subsubsection}{\numberline {7.1.5.53}uart\_data}{27}{subsubsection.7.1.5.53}%
+\contentsline {subsubsection}{\numberline {7.1.5.54}uart\_index}{28}{subsubsection.7.1.5.54}%
+\contentsline {subsubsection}{\numberline {7.1.5.55}uart\_last\_remote\_time}{28}{subsubsection.7.1.5.55}%
+\contentsline {subsubsection}{\numberline {7.1.5.56}uart\_rx\_buffer}{28}{subsubsection.7.1.5.56}%
